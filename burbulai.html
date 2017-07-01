@@ -49,7 +49,7 @@
     <input type="number" id="speed" value="1000">
     <br>
     <canvas id="turtle-canvas" height="200" width="200"></canvas>
-    <canvas id="canvas" height="400" width="800"></canvas>
+    <canvas id="canvas" height="450" width="1000"></canvas>
     <script type="text/javascript">
         var canvas = document.getElementById('canvas');
         var turtleCanvas = document.getElementById('turtle-canvas');
@@ -60,6 +60,8 @@
         var target = null;
         var lines = [];
         var label = '';
+        var movement = 0;
+        var time;
         var turtles = [{x: 4, y: 2, direction: 2, moved: true}];
         var directions = [
             {x: 1, y: 0},
@@ -239,7 +241,11 @@
             ctx.fill();
         };
 
-        canvas.addEventListener('mouseup', function(event) {
+        var mouseUp = function(event) {
+            if (Date.now() - time > 500 && movement < 5) {
+                execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
+                return false;
+            }
             if (dragging) {
                 target = null;
                 target = locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop);
@@ -252,13 +258,14 @@
             target = null;
             dragging = false;
             return false;
-        });
+        };
 
-        canvas.addEventListener('mousemove', function(event) {
+        var mouseMove = function(event) {
+            movement++;
             if (dragging) {
 
             }
-        });
+        };
 
         var drawBubbles = function(selection) {
             for (var j in bubbles) {
@@ -299,8 +306,10 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         };
 
-        canvas.addEventListener('mousedown', function(event) {
+        var mouseDown = function(event) {
             clear();
+            movement = 0;
+            time = Date.now();
             var x = event.pageX - canvas.offsetLeft;
             var y = event.pageY - canvas.offsetTop;
             var selection = locate(x, y);
@@ -316,7 +325,16 @@
             dragging = true;
             source = selection;
             return false;
-        });
+        };
+
+        canvas.addEventListener('mousedown', mouseDown);
+        canvas.addEventListener('touchstart', mouseDown);
+
+        canvas.addEventListener('mouseup', mouseUp);
+        canvas.addEventListener('touchend', mouseUp);
+
+        canvas.addEventListener('mousemove', mouseMove);
+        canvas.addEventListener('touchmove', mouseMove);
 
         var growing;
         var shrinking;
