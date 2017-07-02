@@ -59,7 +59,7 @@
     <span id="dice">⚀</span>
     <br>
     <canvas id="turtle-canvas" height="200" width="200"></canvas>
-    <canvas id="canvas" height="450" width="1000"></canvas>
+    <canvas id="canvas" height="350" width="1000"></canvas>
     <script type="text/javascript">
         var canvas = document.getElementById('canvas');
         var turtleCanvas = document.getElementById('turtle-canvas');
@@ -253,6 +253,7 @@
                 event.pageX = event.changedTouches[0].pageX;
                 event.pageY = event.changedTouches[0].pageY;
             }
+            window.alert(movement);
             if (Date.now() - time > 500 && movement < 50) {
                 execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
                 return false;
