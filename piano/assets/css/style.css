@@ -111,39 +111,6 @@ hr {
   top: 0;
   width: 10%;
 }
-.share {
-  height: 20px;
-}
-.social-media {
-  list-style: none;
-  margin: 0;
-}
-.social-media li {
-  display: inline-block;
-  margin: 0 2px;
-}
-.social-media a {
-  transition: color .1s linear;
-  color: #222;
-  font-size: 20px;
-}
-.social-media a:hover {
-  color: #777;
-}
-.comments {
-  font-size: 12px;
-}
-@media (max-width: 767px) {
-  .container {
-    width: auto;
-  }
-  h1 {
-    font-size: 50px;
-  }
-  .fork {
-    width: 30%;
-  }
-}
 .piano {
   background: -webkit-linear-gradient(-65deg, #000000, #222222, #000000, #666666, #222222 75%);
   background: -moz-linear-gradient(-65deg, #000000, #222222, #000000, #666666, #222222 75%);
@@ -158,7 +125,7 @@ hr {
   display: inline-block;
   position: relative;
   margin: 0 2px;
-  width: 50px;
+  width: 35px;
 }
 .key:active .black-key,
 .key.active .black-key {
@@ -203,25 +170,4 @@ hr {
   border-bottom-width: 3px;
   top: 0;
   background: linear-gradient(-20deg, #222222, #000000, #222222);
-}
-@media (max-width: 767px) {
-  .key {
-    width: 8%;
-  }
-  .key:nth-child(1),
-  .key:nth-child(2),
-  .key:nth-child(3) {
-    display: none;
-  }
-}
-@media (max-width: 480px) {
-  .key {
-    width: 12%;
-  }
-  .key:nth-child(11),
-  .key:nth-child(12),
-  .key:nth-child(13),
-  .key:nth-child(14) {
-    display: none;
-  }
 }
