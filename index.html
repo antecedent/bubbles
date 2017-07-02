@@ -163,8 +163,13 @@
                 }
             }
             if (env[turtle.x][turtle.y] != '.') {
-                canvas.setAttribute('class', 'error');
-                return;
+                turtle.x -= directions[turtle.direction].x;
+                turtle.y -= directions[turtle.direction].y;
+                window.clearInterval(execution);
+                endPulsation();
+                clear();
+                drawBubbles();
+                window.alert('Atsitrenkėte į sieną!');
             }
             grid[turtle.x][turtle.y] = 'T';
             drawGrid();
