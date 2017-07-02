@@ -253,7 +253,7 @@
                 event.pageX = event.changedTouches[0].pageX;
                 event.pageY = event.changedTouches[0].pageY;
             }
-            if (Date.now() - time > 500 && movement < 5) {
+            if (Date.now() - time > 500 && movement < 50) {
                 execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
                 return false;
             }
