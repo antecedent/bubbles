@@ -38,21 +38,22 @@
         <option value="↶">Suktis prieš laikrodžio rodyklę</option>
         <option value="🎲">Mesti kauliuką</option>
         <option value="🚩">Pažymėti</option>
+        <option value="😋">Suvalgyti</option>
     </select>
     Rodyklė:
     <select id="conditioning">
         <option value="">Besąlygiška</option>
         <option value="Obstacle">Tik priešais kliūtį</option>
         <option value="Path">Tik priešais kelią</option>
-        <option value="Food">Tik priešais maistą</option>
-        <option value="Flag">Tik priešais žymę</option>
+        <option value="Food">Tik ant maisto</option>
+        <option value="Flag">Tik ant žymės</option>
         <option value="0">Tik jei iškritusi 1 akis</option>
         <option value="1">Tik jei iškritę 2 akys</option>
         <option value="2">Tik jei iškritę 3 akys</option>
         <option value="3">Tik jei iškritę 4 akys</option>
         <option value="4">Tik jei iškritę 5 akys</option>
         <option value="5">Tik jei iškritę 6 akys</option>
-        <option value="Else">Visais kitais atvejais</option>
+        <option value="Else">Jei jokia kita rodyklė netinka</option>
     </select>
     Lėtinimas, ms:
     <input type="number" id="speed" value="1000" style="width: 4em;">
@@ -93,6 +94,7 @@
             '#........#',
             '##########'
         ];
+        var eaten = false;
         var flagged = [
             [false, false, false, false, false, false, false, false, false, false],
             [false, false, false, false, false, false, false, false, false, false],
@@ -109,13 +111,15 @@
         var speed = 1000;
 
         var admits = function(condition) {
-            var x = turtle.x + directions[turtle.direction].x;
-            var y = turtle.y + directions[turtle.direction].y;
+            var x = turtle.x;
+            var y = turtle.y;
+            var xx = x + directions[turtle.direction].x;
+            var yy = y + directions[turtle.direction].y;
             var result =
                 (condition == '') ||
-                (condition == 'Path' && grid[x][y] == '.') ||
-                (condition == 'Food' && grid[x][y] == 'F') ||
-                (condition == 'Obstacle' && grid[x][y] == '#') ||
+                (condition == 'Path' && grid[xx][yy] != '#') ||
+                (condition == 'Food' && env[x][y] == 'F' && !eaten) ||
+                (condition == 'Obstacle' && grid[xx][yy] == '#') ||
                 (condition == 'Flag' && flagged[x][y]) ||
                 (condition == dice);
             return result;
@@ -151,6 +155,14 @@
                 if (c == '🚩') {
                     flagged[turtle.x][turtle.y] = true;
                 }
+                if (c == '😋') {
+                    if (env[turtle.x][turtle.y] != 'F' || eaten) {
+                        window.alert('Čia ne maistas!');
+                    } else {
+                        eaten = true;
+                        window.alert('Om nom nom. Puikiai padirbėjote!');
+                    }
+                }
             }
             drawTurtle();
         };
@@ -163,7 +175,7 @@
                     grid[k].push(env[k][j]);
                 }
             }
-            if (env[turtle.x][turtle.y] != '.') {
+            if (env[turtle.x][turtle.y] == '#') {
                 turtle.x -= directions[turtle.direction].x;
                 turtle.y -= directions[turtle.direction].y;
                 window.clearInterval(execution);
@@ -191,10 +203,10 @@
                             tctx.fillStyle = '#380';
                             break;
                         case 'T':
-                            tctx.fillStyle = '#380';
+                            tctx.fillStyle = (env[k][j] == 'F' && !eaten) ? '#CC0' : '#380';
                             break;
                         case 'F':
-                            tctx.fillStyle = '#CC0';
+                            tctx.fillStyle = !eaten ? '#CC0' : '#380';
                             break;
                     }
                     tctx.fillRect(x, y, 20, 20);
@@ -254,7 +266,7 @@
             }
             if (condition == 'Else') {
                 ctx.font = '40px bold sans-serif';
-                ctx.fillStyle = '#C00';
+                ctx.fillStyle = '#802ab2';
                 ctx.fillText('*', x, y + 20);
             }
         };
