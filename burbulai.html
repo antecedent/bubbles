@@ -33,20 +33,30 @@
     Veiksmas:
     <select id="action">
         <option value="">Jokio</option>
-        <option value="Fwd">Pirmyn</option>
-        <option value="Bk">Atgal</option>
-        <option value="Turn">Pasisukti</option>
-        <option value="Rnd">Pasisukti atsitiktinai</option>
+        <option value="➠">Pirmyn</option>
+        <option value="↷">Suktis pagal laikrodžio rodyklę</option>
+        <option value="↶">Suktis prieš laikrodžio rodyklę</option>
+        <option value="🎲">Mesti kauliuką</option>
+        <option value="🚩">Pažymėti</option>
     </select>
     Rodyklė:
     <select id="conditioning">
         <option value="">Besąlygiška</option>
         <option value="Obstacle">Tik priešais kliūtį</option>
-        <option value="Portal">Tik priešais portalą</option>
         <option value="Path">Tik priešais kelią</option>
+        <option value="Food">Tik priešais maistą</option>
+        <option value="Flag">Tik priešais žymę</option>
+        <option value="0">Tik jei iškritusi 1 akis</option>
+        <option value="1">Tik jei iškritę 2 akys</option>
+        <option value="2">Tik jei iškritę 3 akys</option>
+        <option value="3">Tik jei iškritę 4 akys</option>
+        <option value="4">Tik jei iškritę 5 akys</option>
+        <option value="5">Tik jei iškritę 6 akys</option>
     </select>
     Lėtinimas, ms:
     <input type="number" id="speed" value="1000">
+    Kauliukas:
+    <span id="dice">⚀</span>
     <br>
     <canvas id="turtle-canvas" height="200" width="200"></canvas>
     <canvas id="canvas" height="450" width="1000"></canvas>
@@ -62,16 +72,17 @@
         var label = '';
         var movement = 0;
         var time;
-        var turtles = [{x: 4, y: 2, direction: 2, moved: true}];
+        var turtle = {x: 4, y: 2, direction: 2};
         var directions = [
             {x: 1, y: 0},
             {x: 0, y: 1},
             {x: -1, y: 0},
             {x: 0, y: -1}
         ];
+        var arrows = ['▼', '▶', '▲', '◀'];
         var env = [
             '##########',
-            '#...#...P#',
+            '#...#...F#',
             '#...#....#',
             '#...#....#',
             '#...#....#',
@@ -81,96 +92,69 @@
             '#........#',
             '##########'
         ];
+        var flagged = [
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false]
+        ];
         var grid = [];
         var speed = 1000;
 
         var admits = function(condition) {
-            var x = turtles[0].x + directions[turtles[0].direction].x;
-            var y = turtles[0].y + directions[turtles[0].direction].y;
+            var x = turtle.x + directions[turtle.direction].x;
+            var y = turtle.y + directions[turtle.direction].y;
             var result =
                 (condition == '') ||
                 (condition == 'Path' && grid[x][y] == '.') ||
-                (condition == 'Portal' && grid[x][y] == 'P') ||
-                (condition == 'Obstacle' && grid[x][y] == '#');
+                (condition == 'Food' && grid[x][y] == 'F') ||
+                (condition == 'Obstacle' && grid[x][y] == '#') ||
+                (condition == 'Flag' && flagged[x][y]) ||
+                (condition == dice);
             return result;
+        };
+
+        var dice = 0;
+        var diceFaces = '⚀⚁⚂⚃⚄⚅';
+
+        var rollDice = function() {
+            dice = parseInt(Math.random() * 6);
+            document.getElementById('dice').innerHTML = diceFaces[dice];
         };
 
         var commands = function(all) {
             if (all.length == 0) {
                 return;
             }
-            var newTurtles = [];
             for (k in all) {
                 var c = all[k];
-                if (c == 'Fwd') {
-                    for (j in turtles) {
-                        var turtle = turtles[j];
-                        var d = directions[turtle.direction];
-                        newTurtles.push({x: turtle.x + d.x, y: turtle.y + d.y, direction: turtle.direction, moved: true});
-                    }
+                if (c == '➠') {
+                    turtle.x += directions[turtle.direction].x;
+                    turtle.y += directions[turtle.direction].y;
                 }
-                if (c == 'Bk') {
-                    for (j in turtles) {
-                        var turtle = turtles[j];
-                        var d = directions[turtle.direction];
-                        newTurtles.push({x: turtle.x - d.x, y: turtle.y - d.y, direction: turtle.direction, moved: true});
-                    }
+                if (c == '↷') {
+                    turtle.direction = (turtle.direction + 3) % 4;
                 }
-                if (c == 'Turn') {
-                    for (j in turtles) {
-                        var turtle = turtles[j];
-                        newTurtles.push({x: turtle.x, y: turtle.y, direction: (turtle.direction + 1) % 4, moved: false});
-                    }
+                if (c == '↶') {
+                    turtle.direction = (turtle.direction + 1) % 4;
                 }
-                if (c == 'Rnd') {
-                    for (j in turtles) {
-                        var turtle = turtles[j];
-                        newTurtles.push({x: turtle.x, y: turtle.y, direction: (turtle.direction + parseInt(Math.floor(Math.random() * 4))) % 4, moved: false});
-                    }
+                if (c == '🎲') {
+                    rollDice();
                 }
-                if (c == '') {
-                    for (j in turtles) {
-                        var t = turtles[j];
-                        newTurtles.push({x: t.x, y: t.y, direction: t.direction, moved: false});
-                    }
+                if (c == '🚩') {
+                    flagged[turtle.x][turtle.y] = true;
                 }
             }
-            turtles = [];
-            for (k in newTurtles) {
-                var duplicate = false;
-                var t = newTurtles[k];
-                for (j in newTurtles) {
-                    if (j <= k) {
-                        continue;
-                    }
-                    var u = newTurtles[j];
-                    if (t.x == u.x && t.y == u.y && t.direction == u.direction && t.moved == u.moved) {
-                        duplicate = true;
-                        break;
-                    }
-                }
-                if (!duplicate) {
-                    turtles.push(newTurtles[k]);
-                }
-            }
-            drawTurtles();
+            drawTurtle();
         };
 
-        var drawTurtles = function() {
-            /*
-            var tctx = turtleCanvas.getContext('2d');
-            if (turtles.length > 10000) {
-                console.log('too many turtles');
-                turtles = [];
-            }
-            tctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-            for (k in turtles) {
-                turtle = turtles[k];
-                if (turtle.moved) {
-                    tctx.fillRect(turtle.x, turtle.y, 10, 10);
-                }
-            }
-            */
+        var drawTurtle = function() {
             grid = [];
             for (k in env) {
                 grid.push([]);
@@ -178,14 +162,11 @@
                     grid[k].push(env[k][j]);
                 }
             }
-            for (k in turtles) {
-                var t = turtles[k];
-                if (env[t.x][t.y] != '.') {
-                    canvas.setAttribute('class', 'error');
-                    return;
-                }
-                grid[t.x][t.y] = 'T';
+            if (env[turtle.x][turtle.y] != '.') {
+                canvas.setAttribute('class', 'error');
+                return;
             }
+            grid[turtle.x][turtle.y] = 'T';
             drawGrid();
         };
 
@@ -198,19 +179,29 @@
                 for (j in grid[k]) {
                     switch (grid[k][j]) {
                         case '#':
-                            tctx.fillStyle = 'brown';
+                            tctx.fillStyle = '#740';
                             break;
                         case '.':
-                            tctx.fillStyle = 'green';
+                            tctx.fillStyle = '#380';
                             break;
                         case 'T':
-                            tctx.fillStyle = 'white';
+                            tctx.fillStyle = '#380';
                             break;
-                        case 'P':
-                            tctx.fillStyle = 'purple';
+                        case 'F':
+                            tctx.fillStyle = '#CC0';
                             break;
                     }
                     tctx.fillRect(x, y, 20, 20);
+                    if (flagged[k][j]) {
+                        tctx.fillStyle = 'white';
+                        tctx.font = '15px sans-serif';
+                        tctx.fillText('🚩', x, y + 17);
+                    }
+                    if (grid[k][j] == 'T') {
+                        tctx.fillStyle = 'white';
+                        tctx.font = '20px sans-serif';
+                        tctx.fillText(arrows[turtle.direction], x, y + 17);
+                    }
                     x += 20;
                 }
                 y += 20;
@@ -223,8 +214,7 @@
             var dl = Math.sqrt(Math.pow(d.x, 2) + Math.pow(d.y, 2));
             d.x /= dl;
             d.y /= dl;
-            var colors = {'': 'black', 'Obstacle': 'brown', 'Portal': 'purple', 'Path': 'green'};
-            ctx.strokeStyle = colors[condition];
+            ctx.strokeStyle = '#999';
             ctx.moveTo(bubbles[source].x + d.x * bubbles[source].radius, bubbles[source].y + d.y * bubbles[source].radius);
             ctx.lineTo(bubbles[target].x - d.x * (bubbles[target].radius + 15), bubbles[target].y - d.y * (bubbles[target].radius + 15));
             ctx.stroke();
@@ -237,11 +227,32 @@
             ctx.lineTo(-5, 15);
             ctx.closePath();
             ctx.restore();
-            ctx.fillStyle = colors[condition];
             ctx.fill();
+            var x = parseInt((bubbles[source].x + bubbles[target].x) / 2);
+            var y = parseInt((bubbles[source].y + bubbles[target].y) / 2);
+            if (condition == 'Obstacle' || condition == 'Path' || condition == 'Food') {
+                ctx.fillStyle = {'Obstacle': '#740', 'Path': '#380', 'Food': '#CC0'}[condition];
+                ctx.fillRect(x - 10, y - 10, 20, 20);
+            }
+            if (condition == '0' || parseInt(condition) > 0) {
+                ctx.fillStyle = '#CCC';
+                ctx.fillRect(x - 10, y - 10, 20, 20);
+                ctx.font = '20px sans-serif';
+                ctx.fillStyle = '#333';
+                ctx.fillText(diceFaces[parseInt(condition)], x, y + 7);
+            }
+            if (condition == 'Flag') {
+                ctx.font = '15px sans-serif';
+                ctx.fillText('🚩', x, y + 5);
+            }
         };
 
         var mouseUp = function(event) {
+            event.preventDefault();
+            if ('changedTouches' in event) {
+                event.pageX = event.changedTouches[0].pageX;
+                event.pageY = event.changedTouches[0].pageY;
+            }
             if (Date.now() - time > 500 && movement < 5) {
                 execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
                 return false;
@@ -261,10 +272,12 @@
         };
 
         var mouseMove = function(event) {
+            event.preventDefault();
             movement++;
             if (dragging) {
 
             }
+            return false;
         };
 
         var drawBubbles = function(selection) {
@@ -274,7 +287,7 @@
                 //ctx.rect(bubbles[j].x - 25, bubbles[j].y - 25, 50, 50);
                 ctx.fillStyle = bubbles[j].color.replace('?', selection == j ? '0.9' : '0.3');
                 ctx.fill();
-                ctx.font = '18px "Segoe UI"';
+                ctx.font = '22px sans-serif';
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
                 ctx.textAlign = 'center';
                 ctx.fillText(bubbles[j].label, bubbles[j].x, bubbles[j].y + 7);
@@ -295,7 +308,7 @@
 
         var locate = function(x, y) {
             for (var k in bubbles) {
-                if (Math.pow(bubbles[k].x - x, 2) + Math.pow(bubbles[k].y - y, 2) <= Math.pow(bubbles[k].radius, 2)) {
+                if (Math.pow(bubbles[k].x - x, 2) + Math.pow(bubbles[k].y - y, 2) <= Math.pow(bubbles[k].radius + 10, 2)) {
                     return k;
                 }
             }
@@ -307,6 +320,11 @@
         };
 
         var mouseDown = function(event) {
+            event.preventDefault();
+            if ('changedTouches' in event) {
+                event.pageX = event.changedTouches[0].pageX;
+                event.pageY = event.changedTouches[0].pageY;
+            }
             clear();
             movement = 0;
             time = Date.now();
@@ -389,9 +407,24 @@
 
         var execute = function(id) {
             window.clearInterval(execution);
-            currentStates = [id];
+            currentStates = [[id, '']];
             var doExecution = function() {
                 endPulsation();
+                var admissibleStates = [];
+                for (k in currentStates) {
+                    if (admits(currentStates[k][1])) {
+                        admissibleStates.push(currentStates[k][0]);
+                    }
+                }
+                currentStates = admissibleStates;
+                if (currentStates.length > 1) {
+                    //canvas.setAttribute('class', 'error');
+                    clear();
+                    drawBubbles();
+                    window.clearInterval(execution);
+                    window.alert('Paspaudimas negali persiduoti keliems mygtukams iš karto.');
+                    return;
+                }
                 if (currentStates.length == 0) {
                     clear();
                     drawBubbles();
@@ -404,13 +437,12 @@
                 for (k in currentStates) {
                     cmds.push(bubbles[currentStates[k]].label);
                     for (j in lines) {
-                        if (lines[j][0] === currentStates[k] && admits(lines[j][2])) {
-                            futureStates.push(lines[j][1]);
+                        if (lines[j][0] === currentStates[k]) {
+                            futureStates.push([lines[j][1], lines[j][2]]);
                         }
                     }
                 }
                 commands(cmds);
-                futureStates = [...new Set(futureStates)];
                 currentStates = futureStates;
             };
             doExecution();
@@ -418,6 +450,10 @@
         };
 
         canvas.addEventListener('dblclick', function(event) {
+            if ('changedTouches' in event) {
+                event.pageX = event.changedTouches[0].pageX;
+                event.pageY = event.changedTouches[0].pageY;
+            }
             execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
             return false;
         });
@@ -434,7 +470,14 @@
             speed = parseInt(speedSwitch.value);
         });
 
-        drawTurtles();
+        document.addEventListener('keypress', function() {
+            window.clearInterval(execution);
+            endPulsation();
+            clear();
+            drawBubbles();
+        });
+
+        drawTurtle();
     </script>
 </body>
 </html>
