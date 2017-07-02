@@ -108,7 +108,7 @@ hr {
   display: inline-block;
   position: relative;
   margin: 0 2px;
-  width: 35px;
+  width: 45px;
 }
 .key:active .black-key,
 .key.active .black-key {
