@@ -333,8 +333,7 @@
             var selection = locate(x, y);
             if (selection === null) {
                 if (!shouldInhibitSpawning(x, y)) {
-                    var color = 'rgba(' + Math.floor(Math.random() * 255) + ',' +
-                             Math.floor(Math.random() * 255) + ',' + Math.floor(Math.random() * 255) + ', ?)';
+                    var color = 'rgba(150, 175, 200, ?)';
                     bubbles.push({x: event.pageX - canvas.offsetLeft, y: event.pageY - canvas.offsetTop, radius: 25, color: color, label: label});
                     selection = bubbles.length - 1;
                 }
