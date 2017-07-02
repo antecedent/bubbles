@@ -52,6 +52,7 @@
         <option value="3">Tik jei iškritę 4 akys</option>
         <option value="4">Tik jei iškritę 5 akys</option>
         <option value="5">Tik jei iškritę 6 akys</option>
+        <option value="Else">Visais kitais atvejais</option>
     </select>
     Lėtinimas, ms:
     <input type="number" id="speed" value="1000" style="width: 4em;">
@@ -251,6 +252,11 @@
                 ctx.font = '15px sans-serif';
                 ctx.fillText('🚩', x, y + 5);
             }
+            if (condition == 'Else') {
+                ctx.font = '40px bold sans-serif';
+                ctx.fillStyle = '#C00';
+                ctx.fillText('*', x, y + 20);
+            }
         };
 
         var mouseUp = function(event) {
@@ -420,7 +426,18 @@
                         admissibleStates.push(currentStates[k][0]);
                     }
                 }
-                currentStates = admissibleStates;
+                if (admissibleStates.length == 0) {
+                    var catchAll = null;
+                    for (k in currentStates) {
+                        if (currentStates[k][1] == 'Else') {
+                            catchAll = currentStates[k][0];
+                            break;
+                        }
+                    }
+                    currentStates = (catchAll !== null) ? [catchAll] : [];
+                } else {
+                    currentStates = admissibleStates;
+                }
                 if (currentStates.length > 1) {
                     //canvas.setAttribute('class', 'error');
                     clear();
