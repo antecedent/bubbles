@@ -38,18 +38,6 @@ img {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.icon-facebook:before {
-  content: "\e600";
-}
-.icon-linkedin:before {
-  content: "\e601";
-}
-.icon-twitter:before {
-  content: "\e602";
-}
-.icon-github:before {
-  content: "\e603";
-}
 body {
   color: #222;
   background: #fff;
@@ -95,11 +83,6 @@ p {
 }
 .wrap {
   position: relative;
-}
-.container {
-  margin: 0 auto;
-  padding: 20px;
-  width: 980px;
 }
 hr {
   border-top: 1px solid #ddd;
