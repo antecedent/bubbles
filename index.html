@@ -70,7 +70,7 @@
         var target = null;
         var lines = [];
         var label = '';
-        var movement = 0;
+        var origin = null;
         var time;
         var turtle = {x: 4, y: 2, direction: 2};
         var directions = [
@@ -227,6 +227,7 @@
             ctx.lineTo(-5, 15);
             ctx.closePath();
             ctx.restore();
+            ctx.fillStyle = '#999';
             ctx.fill();
             var x = parseInt((bubbles[source].x + bubbles[target].x) / 2);
             var y = parseInt((bubbles[source].y + bubbles[target].y) / 2);
@@ -253,8 +254,7 @@
                 event.pageX = event.changedTouches[0].pageX;
                 event.pageY = event.changedTouches[0].pageY;
             }
-            window.alert(movement);
-            if (Date.now() - time > 500 && movement < 50) {
+            if (Date.now() - time > 750 && Math.sqrt(Math.pow(origin.x - event.pageX, 2) + Math.pow(origin.y - event.pageY, 2)) < 50) {
                 execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
                 return false;
             }
@@ -274,7 +274,6 @@
 
         var mouseMove = function(event) {
             event.preventDefault();
-            movement++;
             if (dragging) {
 
             }
@@ -327,7 +326,7 @@
                 event.pageY = event.changedTouches[0].pageY;
             }
             clear();
-            movement = 0;
+            origin = {x: event.pageX, y: event.pageY};
             time = Date.now();
             var x = event.pageX - canvas.offsetLeft;
             var y = event.pageY - canvas.offsetTop;
