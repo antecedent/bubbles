@@ -679,7 +679,7 @@
     window.addEventListener('beforeunload', store);
 
     $(window).resize(function() {
-        $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
+        $('#canvas')[0].width = Math.max(950, $(window).width() - 20);
         $('#canvas')[0].height = Math.max(300, $(window).height() - 200);
         $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 180});
         $('.key').width(($(window).width() - 200) / 14);
