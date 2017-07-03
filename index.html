@@ -674,8 +674,8 @@
         };
         
         $(window).resize(function() {
-            $('canvas:not(#turtle-canvas)').width(Math.min(1000, $(window).width()));
-            $('canvas:not(#turtle-canvas)').height(Math.min(350, $(window).height() - 65));
+            $('#canvas').width(Math.max(1000, $(window).width()));
+            $('#canvas').height(Math.max(350, $(window).height() - 65));
         }).trigger('resize');
     </script>
 </body>
