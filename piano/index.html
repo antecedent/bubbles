@@ -655,7 +655,7 @@
         window.localStorage.setItem('piano:timestamp', JSON.stringify(Date.now()));
         window.localStorage.setItem('piano:bubbles', JSON.stringify(bubbles));
         window.localStorage.setItem('piano:lines', JSON.stringify(lines));
-        window.localStorage.setItem('piano:dice', JSON.stringify(flagged));
+        window.localStorage.setItem('piano:dice', JSON.stringify(dice));
         window.localStorage.setItem('piano:speed', JSON.stringify(speed));
     };
 
@@ -663,7 +663,7 @@
         if (window.localStorage.getItem('piano:timestamp')) {
             bubbles = JSON.parse(window.localStorage.getItem('piano:bubbles'));
             lines = JSON.parse(window.localStorage.getItem('piano:lines'));
-            flagged = JSON.parse(window.localStorage.getItem('piano:dice'));
+            dice = JSON.parse(window.localStorage.getItem('piano:dice'));
             speed = JSON.parse(window.localStorage.getItem('piano:speed'));
             speedSwitch.value = speed;
         }
