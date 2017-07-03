@@ -343,6 +343,9 @@
 
         var drawBubbles = function(selection) {
             for (var j in bubbles) {
+                if (bubbles[j].color == 'transparent') {
+                    continue;
+                }
                 ctx.beginPath();
                 ctx.ellipse(bubbles[j].x, bubbles[j].y, bubbles[j].radius, bubbles[j].radius, 0, 0, 2 * Math.PI);
                 //ctx.rect(bubbles[j].x - 25, bubbles[j].y - 25, 50, 50);
