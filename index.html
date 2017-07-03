@@ -171,11 +171,15 @@
                 canvas.setAttribute('class', 'erasing');
                 erasing = true;
             } else {
-                erasing = false;
-                canvas.setAttribute('class', '');
-                eraser.setAttribute('class', '');
+				stopErasing();
             }
         });
+	    
+		var stopErasing = function() {
+			erasing = false;
+			canvas.setAttribute('class', '');
+			eraser.setAttribute('class', '');
+		};
 
         var rollDice = function() {
             dice = parseInt(Math.random() * 6);
@@ -440,20 +444,21 @@
                 } else {
                     bubbles[selection].color = 'transparent';
                 }
-            }
-
-            if ((selection === null || bubbles[selection].color == 'transparent') && !erasing) {
-                if (!shouldInhibitSpawning(x, y) || (selection !== null && bubbles[selection].color == 'transparent')) {
-                    var color = 'rgba(150, 175, 200, ?)';
-                    var newBubble = {x: event.pageX - canvas.offsetLeft, y: event.pageY - canvas.offsetTop, radius: 25, color: color, label: label};
-                    if (selection === null) {
-                        bubbles.push(newBubble);
-                        selection = bubbles.length - 1;
-                    } else {
-                        bubbles[selection] = newBubble;
-                    }
-                }
-            }
+				stopErasing();
+            } else {
+				if (selection === null || bubbles[selection].color == 'transparent') {
+					if (!shouldInhibitSpawning(x, y) || (selection !== null && bubbles[selection].color == 'transparent')) {
+						var color = 'rgba(150, 175, 200, ?)';
+						var newBubble = {x: event.pageX - canvas.offsetLeft, y: event.pageY - canvas.offsetTop, radius: 25, color: color, label: label};
+						if (selection === null) {
+							bubbles.push(newBubble);
+							selection = bubbles.length - 1;
+						} else {
+							bubbles[selection] = newBubble;
+						}
+					}
+				}
+			}
             drawBubbles(selection);
             dragging = true;
             source = selection;
