@@ -593,6 +593,13 @@
         canvas.setAttribute('class', '');
         eraser.setAttribute('class', '');
     };
+
+    var stopExecution = function() {
+        window.clearInterval(execution);
+        endPulsation();
+        clear();
+        drawBubbles();
+    };
 </script>
 </body>
 
