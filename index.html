@@ -10,6 +10,10 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        html {
+            margin: 0;
+        }
+
         canvas {
             display: inline-block;
             border: 1px solid #999;
@@ -28,12 +32,13 @@
         }
 
         #eraser.active {
-            border-radius: 64px;
             background: rgba(175, 200, 150, .5);
         }
 
         #eraser {
-            padding: 2px 5px;
+            border-radius: 64px;
+            padding: 4px 7px;
+            background: rgba(175, 200, 150, .2);
         }
 
         #eraser img {
@@ -53,12 +58,35 @@
 	        margin-top: 0;
             text-align: center;
         }
+
+        #forget {
+            background: url(https://cdn4.iconfinder.com/data/icons/meBaze-Freebies/512/reload.png);
+            background-size: 50px 50px;
+            height: 50px;
+            width: 50px;
+            display: inline-block;
+            position: absolute;
+            z-index: 1000;
+            margin: 0;
+            transition: 1s linear;
+        }
+
+        #forget:hover {
+            filter: drop-shadow(0 0 10px #43C6F0);
+            transform: rotate(30deg);
+            transition: 0.5s linear;
+        }
+
+        #turtle-canvas {
+            z-index: 1000;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
 			integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
 			crossorigin="anonymous"></script>
 </head>
 <body>
+    <a href="#" id="forget"></a>
     <nav>
         Veiksmas:
         <select id="action" style="width: 150px;">
@@ -711,6 +739,7 @@
         $(window).resize(function() {
             $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
             $('#canvas')[0].height = Math.max(350, $(window).height() - 85);
+            $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 80});
             try {
                 drawBubbles();
                 drawTurtle();
@@ -719,6 +748,13 @@
                 forget();
             }
         }).trigger('resize');
+
+        $('#forget').click(function(event) {
+            event.preventDefault();
+            if (window.confirm('Ar norite atkurti aplinką į tokią, kokia ji buvo iš pradžių?')) {
+                forget();
+            }
+        });
 
     </script>
 </body>
