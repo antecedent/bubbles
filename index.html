@@ -6,7 +6,7 @@
         * {
             margin: 10px;
             padding: 0;
-	    outline: none;
+	        outline: none;
             font-family: 'Segoe UI', sans-serif;
         }
 
@@ -29,11 +29,11 @@
 
         #eraser.active {
             border-radius: 64px;
-            background: rgba(150, 175, 200, .5);
+            background: rgba(175, 200, 150, .5);
         }
 
         #eraser {
-            padding: 7px;
+            padding: 2px 5px;
         }
 
         #eraser img {
@@ -44,13 +44,13 @@
         canvas.erasing {
             cursor: crosshair;
         }
-        
+
         #dice {
             font-size: 24px;
         }
-        
+
         nav {
-	    margin-top: 0;
+	        margin-top: 0;
             text-align: center;
         }
     </style>
@@ -85,7 +85,7 @@
             <option value="5">Tik jei iškritę 6 akys</option>
             <option value="Else">Jei jokia kita rodyklė netinka</option>
         </select>
-        <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16" valign="middle"></a>
+        <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16"></a>
         Lėtinimas, ms:
         <input type="number" id="speed" value="1000" style="width: 4em;">
         Kauliukas:
@@ -167,6 +167,7 @@
             event.preventDefault();
             var eraser = document.getElementById('eraser');
             if (!erasing) {
+                stopExecution();
                 eraser.setAttribute('class', 'active');
                 canvas.setAttribute('class', 'erasing');
                 erasing = true;
@@ -174,7 +175,7 @@
 				stopErasing();
             }
         });
-	    
+
 		var stopErasing = function() {
 			erasing = false;
 			canvas.setAttribute('class', '');
@@ -608,7 +609,7 @@
                     clear();
                     drawBubbles();
                     window.clearInterval(execution);
-                    window.alert('Paspaudimas negali persiduoti keliems mygtukams iš karto.');
+                    window.alert('Šiame užsiėmime nėra paralelizmo, todėl paspaudimas negali persiduoti keliems mygtukams iš karto.');
                     return;
                 }
                 if (currentStates.length == 0) {
@@ -656,34 +657,71 @@
             speed = parseInt(speedSwitch.value);
         });
 
-        document.addEventListener('keypress', function() {
+        var stopExecution = function() {
             window.clearInterval(execution);
             endPulsation();
             clear();
             drawBubbles();
+        };
+
+        document.addEventListener('keypress', function(event) {
+            if (event.which == 27) {
+                event.preventDefault();
+                stopExecution();
+            }
         });
 
-        drawTurtle();
-        
         document.getElementById('action').value = '';
         document.getElementById('conditioning').value = '';
-        
-        window.onbeforeunload = function (e) {
-            e = e || window.event;
 
-            // For IE and Firefox prior to version 4
-            if (e) {
-                e.returnValue = 'Ar tikrai uždaryti?';
-            }
-
-            // For Safari
-            return 'Ar tikrai uždaryti?';
+        var store = function() {
+            console.log('Begin storing');
+            window.localStorage.setItem('maze:timestamp', JSON.stringify(Date.now()));
+            window.localStorage.setItem('maze:bubbles', JSON.stringify(bubbles));
+            window.localStorage.setItem('maze:lines', JSON.stringify(lines));
+            window.localStorage.setItem('maze:turtle', JSON.stringify(turtle));
+            window.localStorage.setItem('maze:eaten', JSON.stringify(eaten));
+            window.localStorage.setItem('maze:flagged', JSON.stringify(flagged));
+            window.localStorage.setItem('maze:speed', JSON.stringify(speed));
+            console.log('End storing');
         };
-        
+
+        var fetch = function() {
+            if (window.localStorage.getItem('maze:timestamp')) {
+                bubbles = JSON.parse(window.localStorage.getItem('maze:bubbles'));
+                lines = JSON.parse(window.localStorage.getItem('maze:lines'));
+                turtle = JSON.parse(window.localStorage.getItem('maze:turtle'));
+                eaten = JSON.parse(window.localStorage.getItem('maze:eaten'));
+                flagged = JSON.parse(window.localStorage.getItem('maze:flagged'));
+                speed = JSON.parse(window.localStorage.getItem('maze:speed'));
+            }
+        };
+
+        var forget = function() {
+            window.localStorage.removeItem('maze:timestamp');
+            window.removeEventListener('beforeunload', store);
+            window.location.reload();
+        };
+
+        window.fetch();
+        window.setInterval(store, 15000);
+        window.addEventListener('beforeunload', store);
+
         $(window).resize(function() {
             $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
             $('#canvas')[0].height = Math.max(350, $(window).height() - 85);
+            drawBubbles();
+            drawTurtle();
         }).trigger('resize');
+
+        try {
+            drawBubbles();
+            drawTurtle();
+        } catch (e) {
+            window.alert('Nepavyko atkurti aplinkos.');
+            forget();
+        }
+
     </script>
 </body>
 </html>
