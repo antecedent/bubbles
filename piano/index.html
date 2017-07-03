@@ -361,6 +361,27 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
+    var locateArrow = function(mx, my) {
+        for (var k in lines) {
+            if (lines[k][2] == '(Erased)') {
+                continue;
+            }
+            var source = bubbles[lines[k][0]];
+            var target = bubbles[lines[k][1]];
+            var direction = {x: target.x - source.x, y: target.y - source.y};
+            var x = source.x;
+            var y = source.y;
+            for (var f = 0; f <= 1; f += 0.001) {
+                x += direction.x * 0.001;
+                y += direction.y * 0.001;
+                if (Math.abs(mx - x) < 10 && Math.abs(my - y) < 10) {
+                    return k;
+                }
+            }
+        }
+        return null;
+    };
+
     var mouseDown = function(event) {
         event.preventDefault();
         if ('changedTouches' in event) {
@@ -373,11 +394,29 @@
         var x = event.pageX - canvas.offsetLeft;
         var y = event.pageY - canvas.offsetTop;
         var selection = locate(x, y);
-        if (selection === null) {
-            if (!shouldInhibitSpawning(x, y)) {
-                var color = 'rgba(150, 175, 200, ?)';
-                bubbles.push({x: event.pageX - canvas.offsetLeft, y: event.pageY - canvas.offsetTop, radius: 25, color: color, label: label});
-                selection = bubbles.length - 1;
+
+        if (erasing) {
+            if (selection === null) {
+                var arrow = locateArrow(x, y);
+                if (arrow !== null) {
+                    lines[arrow][2] = '(Erased)';
+                }
+            } else {
+                bubbles[selection].color = 'transparent';
+            }
+			stopErasing();
+        } else {
+			if (selection === null || bubbles[selection].color == 'transparent') {
+                if (!shouldInhibitSpawning(x, y) || (selection !== null && bubbles[selection].color == 'transparent')) {
+                    var color = 'rgba(150, 175, 200, ?)';
+                    var newBubble = {x: event.pageX - canvas.offsetLeft, y: event.pageY - canvas.offsetTop, radius: 25, color: color, label: label};
+                    if (selection === null) {
+                        bubbles.push(newBubble);
+                        selection = bubbles.length - 1;
+                    } else {
+                        bubbles[selection] = newBubble;
+                    }
+                }
             }
         }
         drawBubbles(selection);
@@ -446,14 +485,69 @@
 
     var execution;
 
+    var validateConnections = function() {
+        for (k in lines) {
+            if (lines[k][2] == '(Erased)') {
+                continue;
+            }
+            var source = bubbles[lines[k][0]];
+            var target = bubbles[lines[k][1]];
+            if (source.color == 'transparent' || target.color == 'transparent') {
+                window.alert('Yra rodyklių, vedančių niekur!');
+                return false;
+            }
+        }
+        var lineErased;
+        do {
+            lineErased = false;
+            for (k in lines) {
+                if (lines[k][2] == '(Erased)') {
+                    var last = lines.length - 1;
+                    lines[k] = [lines[last][0], lines[last][1], lines[last][2]];
+                    lines.pop();
+                    lineErased = true;
+                    break;
+                }
+            }
+        } while (lineErased);
+        var holeFound;
+        do {
+            holeFound = false;
+            for (k in bubbles) {
+                if (bubbles[k].color == 'transparent') {
+
+                    var last = bubbles.length - 1;
+                    for (j in lines) {
+                        if (lines[j][0] == last) {
+                            lines[j][0] = k;
+                        }
+                        if (lines[j][1] == last) {
+                            lines[j][1] = k;
+                        }
+                        bubbles[k] = {x: bubbles[last].x, y: bubbles[last].y, radius: bubbles[last].radius, color: bubbles[last].color, label: bubbles[last].label};
+                        bubbles.pop();
+                    }
+                    holeFound = true;
+                    break;
+
+                }
+            }
+        } while (holeFound);
+        return true;
+
+    };
+
     var execute = function(id) {
+        if (!validateConnections()) {
+            return;
+        }
         window.clearInterval(execution);
         currentStates = [[id, '']];
         var doExecution = function() {
             endPulsation();
             var admissibleStates = [];
             for (k in currentStates) {
-                if (admits(currentStates[k][1])) {
+                if (bubbles[currentStates[k][0]].color != 'transparent' && admits(currentStates[k][1])) {
                     admissibleStates.push(currentStates[k][0]);
                 }
             }
@@ -461,7 +555,7 @@
             if (admissibleStates.length == 0) {
                 var catchAll = null;
                 for (k in currentStates) {
-                    if (currentStates[k][1] == 'Else') {
+                    if (bubbles[currentStates[k][0]].color != 'transparent' && currentStates[k][1] == 'Else') {
                         catchAll = currentStates[k][0];
                         break;
                     }
