@@ -254,6 +254,9 @@
     var presses = [];
 
     var drawLine = function(source, target, condition) {
+        if (condition == '(Erased)') {
+            return;
+        }
         ctx.beginPath();
         var d = {x: bubbles[target].x - bubbles[source].x, y: bubbles[target].y - bubbles[source].y};
         var dl = Math.sqrt(Math.pow(d.x, 2) + Math.pow(d.y, 2));
