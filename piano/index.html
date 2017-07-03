@@ -725,6 +725,13 @@
         clear();
         drawBubbles();
     };
+    
+    document.addEventListener('keypress', function(event) {
+        if (event.which == 27) {
+            event.preventDefault();
+            stopExecution();
+        }
+    });
 
 </script>
 <script type="text/javascript" src="assets/js/scripts.min.js"></script>
