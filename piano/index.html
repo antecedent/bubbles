@@ -122,6 +122,7 @@
       #eraser {
           border-radius: 64px;
           padding: 4px 7px;
+          margin: 0 10px;
           background: rgba(175, 200, 150, .2);
       }
 
@@ -558,8 +559,8 @@
 
     $(window).resize(function() {
         $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
-        $('#canvas')[0].height = Math.max(350, $(window).height() - 150);
-        $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 160});
+        $('#canvas')[0].height = Math.max(350, $(window).height() - 160);
+        $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 150});
         try {
             drawBubbles();
             drawTurtle();
