@@ -2,9 +2,13 @@
 <html lang="en">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Pianinas</title>
-  <link type="text/css" rel="stylesheet" href="assets/css/style.css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Pianinas</title>
+    <link type="text/css" rel="stylesheet" href="assets/css/style.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <script type="text/javascript" src="assets/js/scripts.min.js"></script>
 </head>
 
 <body>
@@ -179,17 +183,6 @@
   <footer>
       Panaudotas <a href="https://github.com/LFeh/piano">pianino klaviatūros įgyvendinimas</a> yra &copy; Felipe Fialho.
   </footer>
-
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-          integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-          crossorigin="anonymous"></script>
-
-  <script type="text/javascript" src="assets/js/scripts.min.js"></script>
-
-
-
-
-
 
   <script type="text/javascript">
     var canvas = document.getElementById('canvas');
@@ -557,10 +550,14 @@
       };
     })(jQuery);
 
+    var forget = function() {
+
+    };
+
     $(window).resize(function() {
         $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
         $('#canvas')[0].height = Math.max(350, $(window).height() - 160);
-        $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 150});
+        $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 140});
         try {
             drawBubbles();
             drawTurtle();
