@@ -674,8 +674,8 @@
         };
         
         $(window).resize(function() {
-            $('#canvas').width(Math.max(1000, $(window).width() - 20));
-            $('#canvas').height(Math.max(350, $(window).height() - 85));
+            $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
+            $('#canvas')[0].height = Math.max(350, $(window).height() - 85);
         }).trigger('resize');
     </script>
 </body>
