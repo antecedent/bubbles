@@ -149,7 +149,8 @@
 
         var erasing = false;
 
-        document.getElementById('eraser').addEventListener('click', function() {
+        document.getElementById('eraser').addEventListener('click', function(event) {
+            event.preventDefault();
             var eraser = document.getElementById('eraser');
             if (!erasing) {
                 eraser.setAttribute('class', 'active');
@@ -160,7 +161,6 @@
                 canvas.setAttribute('class', '');
                 eraser.setAttribute('class', '');
             }
-            return false;
         });
 
         var rollDice = function() {
