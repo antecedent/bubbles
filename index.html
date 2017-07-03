@@ -6,12 +6,16 @@
         * {
             margin: 10px;
             padding: 0;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         canvas {
             display: inline-block;
             border: 1px solid #999;
             border-radius: 5px;
+            position: absolute;
+            left: 0px;
+            top: 65px;
         }
 
         canvas.error {
@@ -20,12 +24,6 @@
 
         ::selection {
             background: transparent;
-        }
-
-        #turtle-canvas {
-            position: absolute;
-            left: 20px;
-            top: 59px;
         }
 
         #eraser.active {
@@ -45,42 +43,56 @@
         canvas.erasing {
             cursor: crosshair;
         }
+        
+        #dice {
+            font-size: 24px;
+        }
+        
+        nav {
+            text-align: center;
+        }
     </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+			integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+			crossorigin="anonymous"></script>
 </head>
 <body>
-    Veiksmas:
-    <select id="action" style="width: 150px;">
-        <option value="">Jokio</option>
-        <option value="➠">Pirmyn</option>
-        <option value="↷">Suktis pagal laikrodžio rodyklę</option>
-        <option value="↶">Suktis prieš laikrodžio rodyklę</option>
-        <option value="🎲">Mesti kauliuką</option>
-        <option value="🚩">Pažymėti</option>
-        <option value="😋">Suvalgyti</option>
-    </select>
-    Rodyklė:
-    <select id="conditioning" style="width: 150px;">
-        <option value="">Besąlygiška</option>
-        <option value="Obstacle">Tik priešais kliūtį</option>
-        <option value="Path">Tik priešais kelią</option>
-        <option value="Food">Tik ant maisto</option>
-        <option value="Flag">Tik ant žymės</option>
-        <option value="0">Tik jei iškritusi 1 akis</option>
-        <option value="1">Tik jei iškritę 2 akys</option>
-        <option value="2">Tik jei iškritę 3 akys</option>
-        <option value="3">Tik jei iškritę 4 akys</option>
-        <option value="4">Tik jei iškritę 5 akys</option>
-        <option value="5">Tik jei iškritę 6 akys</option>
-        <option value="Else">Jei jokia kita rodyklė netinka</option>
-    </select>
-    <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16" valign="middle"></a>
-    Lėtinimas, ms:
-    <input type="number" id="speed" value="1000" style="width: 4em;">
-    Kauliukas:
-    <span id="dice">⚀</span>
-    <br>
-    <canvas id="turtle-canvas" height="200" width="200"></canvas>
-    <canvas id="canvas" height="350" width="1000"></canvas>
+    <nav>
+        Veiksmas:
+        <select id="action" style="width: 150px;">
+            <option value="">Jokio</option>
+            <option value="➠">Pirmyn</option>
+            <option value="↷">Suktis pagal laikrodžio rodyklę</option>
+            <option value="↶">Suktis prieš laikrodžio rodyklę</option>
+            <option value="🎲">Mesti kauliuką</option>
+            <option value="🚩">Pažymėti</option>
+            <option value="😋">Suvalgyti</option>
+        </select>
+        Rodyklė:
+        <select id="conditioning" style="width: 150px;">
+            <option value="">Besąlygiška</option>
+            <option value="Obstacle">Tik priešais kliūtį</option>
+            <option value="Path">Tik priešais kelią</option>
+            <option value="Food">Tik ant maisto</option>
+            <option value="Flag">Tik ant žymės</option>
+            <option value="0">Tik jei iškritusi 1 akis</option>
+            <option value="1">Tik jei iškritę 2 akys</option>
+            <option value="2">Tik jei iškritę 3 akys</option>
+            <option value="3">Tik jei iškritę 4 akys</option>
+            <option value="4">Tik jei iškritę 5 akys</option>
+            <option value="5">Tik jei iškritę 6 akys</option>
+            <option value="Else">Jei jokia kita rodyklė netinka</option>
+        </select>
+        <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16" valign="middle"></a>
+        Lėtinimas, ms:
+        <input type="number" id="speed" value="1000" style="width: 4em;">
+        Kauliukas:
+        <span id="dice">⚀</span>
+    </nav>
+    <main>
+        <canvas id="turtle-canvas" height="200" width="200"></canvas>
+        <canvas id="canvas" height="350" width="1000"></canvas>
+    </main>
     <script type="text/javascript">
         var canvas = document.getElementById('canvas');
         var turtleCanvas = document.getElementById('turtle-canvas');
@@ -660,6 +672,11 @@
             // For Safari
             return 'Ar tikrai uždaryti?';
         };
+        
+        $(window).resize(function() {
+            $('canvas:not(#turtle-canvas)').width(Math.min(1000, $(window).width()));
+            $('canvas:not(#turtle-canvas)').height(Math.min(350, $(window).height() - 65));
+        }).trigger('resize');
     </script>
 </body>
 </html>
