@@ -558,7 +558,7 @@
 
     $(window).resize(function() {
         $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
-        $('#canvas')[0].height = Math.max(350, $(window).height() - 160);
+        $('#canvas')[0].height = Math.max(350, $(window).height() - 150);
         $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 160});
         try {
             drawBubbles();
@@ -575,6 +575,27 @@
             forget();
         }
     });
+
+    var erasing = false;
+
+    document.getElementById('eraser').addEventListener('click', function(event) {
+        event.preventDefault();
+        var eraser = document.getElementById('eraser');
+        if (!erasing) {
+            stopExecution();
+            eraser.setAttribute('class', 'active');
+            canvas.setAttribute('class', 'erasing');
+            erasing = true;
+        } else {
+            stopErasing();
+        }
+    });
+
+    var stopErasing = function() {
+        erasing = false;
+        canvas.setAttribute('class', '');
+        eraser.setAttribute('class', '');
+    };
 </script>
 </body>
 
