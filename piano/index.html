@@ -651,6 +651,34 @@
       };
     })(jQuery);
 
+    var store = function() {
+        window.localStorage.setItem('piano:timestamp', JSON.stringify(Date.now()));
+        window.localStorage.setItem('piano:bubbles', JSON.stringify(bubbles));
+        window.localStorage.setItem('piano:lines', JSON.stringify(lines));
+        window.localStorage.setItem('piano:dice', JSON.stringify(flagged));
+        window.localStorage.setItem('piano:speed', JSON.stringify(speed));
+    };
+
+    var fetch = function() {
+        if (window.localStorage.getItem('piano:timestamp')) {
+            bubbles = JSON.parse(window.localStorage.getItem('piano:bubbles'));
+            lines = JSON.parse(window.localStorage.getItem('piano:lines'));
+            flagged = JSON.parse(window.localStorage.getItem('piano:dice'));
+            speed = JSON.parse(window.localStorage.getItem('piano:speed'));
+            speedSwitch.value = speed;
+        }
+    };
+
+    var forget = function() {
+        window.localStorage.removeItem('piano:timestamp');
+        window.removeEventListener('beforeunload', store);
+        window.location.reload();
+    };
+
+    window.fetch();
+    window.setInterval(store, 15000);
+    window.addEventListener('beforeunload', store);
+
     $(window).resize(function() {
         $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
         $('#canvas')[0].height = Math.max(350, $(window).height() - 160);
@@ -699,33 +727,6 @@
         drawBubbles();
     };
 
-    var store = function() {
-        window.localStorage.setItem('piano:timestamp', JSON.stringify(Date.now()));
-        window.localStorage.setItem('piano:bubbles', JSON.stringify(bubbles));
-        window.localStorage.setItem('piano:lines', JSON.stringify(lines));
-        window.localStorage.setItem('piano:dice', JSON.stringify(flagged));
-        window.localStorage.setItem('piano:speed', JSON.stringify(speed));
-    };
-
-    var fetch = function() {
-        if (window.localStorage.getItem('piano:timestamp')) {
-            bubbles = JSON.parse(window.localStorage.getItem('piano:bubbles'));
-            lines = JSON.parse(window.localStorage.getItem('piano:lines'));
-            flagged = JSON.parse(window.localStorage.getItem('piano:dice'));
-            speed = JSON.parse(window.localStorage.getItem('piano:speed'));
-            speedSwitch.value = speed;
-        }
-    };
-
-    var forget = function() {
-        window.localStorage.removeItem('piano:timestamp');
-        window.removeEventListener('beforeunload', store);
-        window.location.reload();
-    };
-
-    window.fetch();
-    window.setInterval(store, 15000);
-    window.addEventListener('beforeunload', store);
 </script>
 </body>
 
