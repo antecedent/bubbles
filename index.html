@@ -648,6 +648,18 @@
         
         document.getElementById('action').value = '';
         document.getElementById('conditioning').value = '';
+        
+        window.onbeforeunload = function (e) {
+            e = e || window.event;
+
+            // For IE and Firefox prior to version 4
+            if (e) {
+                e.returnValue = 'Ar tikrai uždaryti?';
+            }
+
+            // For Safari
+            return 'Ar tikrai uždaryti?';
+        };
     </script>
 </body>
 </html>
