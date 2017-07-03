@@ -6,7 +6,7 @@
         * {
             margin: 10px;
             padding: 0;
-	        outline: none;
+            outline: none;
             font-family: 'Segoe UI', sans-serif;
         }
 
@@ -710,17 +710,14 @@
         $(window).resize(function() {
             $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
             $('#canvas')[0].height = Math.max(350, $(window).height() - 85);
-            drawBubbles();
-            drawTurtle();
+            try {
+                drawBubbles();
+                drawTurtle();
+            } catch (e) {
+                window.alert('Nepavyko atkurti aplinkos.');
+                forget();
+            }
         }).trigger('resize');
-
-        try {
-            drawBubbles();
-            drawTurtle();
-        } catch (e) {
-            window.alert('Nepavyko atkurti aplinkos.');
-            forget();
-        }
 
     </script>
 </body>
