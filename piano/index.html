@@ -115,6 +115,25 @@
           color: #777;
       }
 
+      #eraser.active {
+          background: rgba(175, 200, 150, .5);
+      }
+
+      #eraser {
+          border-radius: 64px;
+          padding: 4px 7px;
+          background: rgba(175, 200, 150, .2);
+      }
+
+      #eraser img {
+          padding: 0;
+          margin: 0;
+      }
+
+      canvas.erasing {
+          cursor: crosshair;
+      }
+
   </style>
 
   <main>
@@ -149,6 +168,7 @@
           <option value="5">Atvirtus 6 akimis</option>
           <option value="Else">Netinkant jokiai kitai rodyklei</option>
       </select>
+      <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16"></a>
       Lėtinimas, ms:
       <input type="number" id="speed" value="1000" style="width: 4em;">
       Kauliukas:
