@@ -555,7 +555,6 @@
             holeFound = false;
             for (k in bubbles) {
                 if (bubbles[k].color == 'transparent') {
-
                     var last = bubbles.length - 1;
                     for (j in lines) {
                         if (lines[j][0] == last) {
@@ -564,12 +563,11 @@
                         if (lines[j][1] == last) {
                             lines[j][1] = k;
                         }
-                        bubbles[k] = {x: bubbles[last].x, y: bubbles[last].y, radius: bubbles[last].radius, color: bubbles[last].color, label: bubbles[last].label};
-                        bubbles.pop();
                     }
+                    bubbles[k] = {x: bubbles[last].x, y: bubbles[last].y, radius: bubbles[last].radius, color: bubbles[last].color, label: bubbles[last].label};
+                    bubbles.pop();
                     holeFound = true;
                     break;
-
                 }
             }
         } while (holeFound);
