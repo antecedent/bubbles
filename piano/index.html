@@ -302,6 +302,7 @@
             event.pageX = event.changedTouches[0].pageX;
             event.pageY = event.changedTouches[0].pageY;
         }
+        stopErasing();
         if (Date.now() - time > 750 && Math.sqrt(Math.pow(origin.x - event.pageX, 2) + Math.pow(origin.y - event.pageY, 2)) < 50) {
             execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
             return false;
@@ -416,7 +417,6 @@
             } else {
                 bubbles[selection].color = 'transparent';
             }
-			stopErasing();
         } else {
 			if (selection === null || bubbles[selection].color == 'transparent') {
                 if (!shouldInhibitSpawning(x, y) || (selection !== null && bubbles[selection].color == 'transparent')) {
