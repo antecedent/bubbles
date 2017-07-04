@@ -326,7 +326,7 @@
 
     var mouseMove = function(event) {
         event.preventDefault();
-        if (erasing && Date.now() - lastVirtualMouseDown > 250) {
+        if (dragging && erasing && Date.now() - lastVirtualMouseDown > 250) {
             mouseDown(event);
             lastVirtualMouseDown = Date.now();
         }
@@ -543,8 +543,15 @@
                 }
             }
         } while (lineErased);
+        var count = 0;
         var holeFound;
         do {
+            count++;
+            if (count > 1000) {
+                console.log(bubbles, lines);
+                console.log('FROWNY FACE');
+                break;
+            }
             holeFound = false;
             for (k in bubbles) {
                 if (bubbles[k].color == 'transparent') {
