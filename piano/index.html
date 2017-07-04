@@ -523,7 +523,13 @@
         return true;
     };
 
+    var cleaningUp = false;
+
     var cleanUp = function() {
+        if (cleaningUp) {
+            return;
+        }
+        cleaningUp = true;
         var lineErased;
         do {
             lineErased = false;
@@ -560,6 +566,7 @@
                 }
             }
         } while (holeFound);
+        cleaningUp = false;
     };
 
     var execute = function(id) {
