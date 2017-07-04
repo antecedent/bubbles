@@ -381,15 +381,21 @@
             return false;
         };
 
+        var lastVirtualMouseDown = 0;
+
         var mouseMove = function(event) {
             event.preventDefault();
-            if (dragging) {
-
+            if (dragging && erasing && Date.now() - lastVirtualMouseDown > 250) {
+                mouseDown(event);
+                lastVirtualMouseDown = Date.now();
             }
             return false;
         };
 
         var drawBubbles = function(selection) {
+            if (validateConnections(false)) {
+                cleanUp();
+            }
             for (var j in bubbles) {
                 if (bubbles[j].color == 'transparent') {
                     continue;
@@ -474,7 +480,6 @@
                 } else {
                     bubbles[selection].color = 'transparent';
                 }
-				stopErasing();
             } else {
 				if (selection === null || bubbles[selection].color == 'transparent') {
 					if (!shouldInhibitSpawning(x, y) || (selection !== null && bubbles[selection].color == 'transparent')) {
@@ -555,62 +560,79 @@
 
         var execution;
 
-        var validateConnections = function() {
-            for (k in lines) {
-                if (lines[k][2] == '(Erased)') {
-                    continue;
-                }
-                var source = bubbles[lines[k][0]];
-                var target = bubbles[lines[k][1]];
-                if (source.color == 'transparent' || target.color == 'transparent') {
-                    window.alert('Yra rodyklių, vedančių niekur!');
-                    return false;
-                }
-            }
-            var lineErased;
-            do {
-                lineErased = false;
+            var validateConnections = function(warn) {
                 for (k in lines) {
                     if (lines[k][2] == '(Erased)') {
-                        var last = lines.length - 1;
-                        lines[k] = [lines[last][0], lines[last][1], lines[last][2]];
-                        lines.pop();
-                        lineErased = true;
-                        break;
+                        continue;
+                    }
+                    var source = bubbles[lines[k][0]];
+                    var target = bubbles[lines[k][1]];
+                    if (source.color == 'transparent' || target.color == 'transparent') {
+                        if (warn) {
+                            window.alert('Yra rodyklių, nevedančių niekur!');
+                        }
+                        return false;
                     }
                 }
-            } while (lineErased);
-            var holeFound;
-            do {
-                holeFound = false;
-                for (k in bubbles) {
-                    if (bubbles[k].color == 'transparent') {
+                return true;
+            };
 
-                        var last = bubbles.length - 1;
-                        for (j in lines) {
-                            if (lines[j][0] == last) {
-                                lines[j][0] = k;
-                            }
-                            if (lines[j][1] == last) {
-                                lines[j][1] = k;
+            var cleaningUp = false;
+
+            var cleanUp = function() {
+                if (cleaningUp) {
+                    return;
+                }
+                cleaningUp = true;
+                var lineErased;
+                do {
+                    lineErased = false;
+                    for (k in lines) {
+                        if (lines[k][2] == '(Erased)') {
+                            var last = lines.length - 1;
+                            lines[k] = [lines[last][0], lines[last][1], lines[last][2]];
+                            lines.pop();
+                            lineErased = true;
+                            break;
+                        }
+                    }
+                } while (lineErased);
+                var count = 0;
+                var holeFound;
+                do {
+                    count++;
+                    if (count > 1000) {
+                        console.log(bubbles, lines);
+                        console.log('FROWNY FACE');
+                        break;
+                    }
+                    holeFound = false;
+                    for (k in bubbles) {
+                        if (bubbles[k].color == 'transparent') {
+                            var last = bubbles.length - 1;
+                            for (j in lines) {
+                                if (lines[j][0] == last) {
+                                    lines[j][0] = k;
+                                }
+                                if (lines[j][1] == last) {
+                                    lines[j][1] = k;
+                                }
                             }
                             bubbles[k] = {x: bubbles[last].x, y: bubbles[last].y, radius: bubbles[last].radius, color: bubbles[last].color, label: bubbles[last].label};
                             bubbles.pop();
+                            holeFound = true;
+                            break;
                         }
-                        holeFound = true;
-                        break;
-
                     }
-                }
-            } while (holeFound);
-            return true;
-
-        };
+                } while (holeFound);
+                cleaningUp = false;
+            };
 
         var execute = function(id) {
             if (!validateConnections()) {
                 return;
             }
+            cleanUp();
             window.clearInterval(execution);
             currentStates = [[id, '']];
             var doExecution = function() {
