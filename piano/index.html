@@ -329,7 +329,13 @@
     };
 
     var drawBubbles = function(selection) {
+        if (validateConnections(false)) {
+            cleanUp();
+        }
         for (var j in bubbles) {
+            if (bubbles[j].color == 'transparent') {
+                continue;
+            }
             ctx.beginPath();
             ctx.ellipse(bubbles[j].x, bubbles[j].y, bubbles[j].radius, bubbles[j].radius, 0, 0, 2 * Math.PI);
             //ctx.rect(bubbles[j].x - 25, bubbles[j].y - 25, 50, 50);
@@ -491,7 +497,7 @@
 
     var execution;
 
-    var validateConnections = function() {
+    var validateConnections = function(warn) {
         for (k in lines) {
             if (lines[k][2] == '(Erased)') {
                 continue;
@@ -499,10 +505,16 @@
             var source = bubbles[lines[k][0]];
             var target = bubbles[lines[k][1]];
             if (source.color == 'transparent' || target.color == 'transparent') {
-                window.alert('Yra rodyklių, vedančių niekur!');
+                if (warn) {
+                    window.alert('Yra rodyklių, vedančių niekur!');
+                }
                 return false;
             }
         }
+        return true;
+    };
+
+    var cleanUp = function() {
         var lineErased;
         do {
             lineErased = false;
@@ -539,14 +551,13 @@
                 }
             }
         } while (holeFound);
-        return true;
-
     };
 
     var execute = function(id) {
-        if (!validateConnections()) {
+        if (!validateConnections(true)) {
             return;
         }
+        cleanUp();
         window.clearInterval(execution);
         currentStates = [[id, '']];
         var doExecution = function() {
@@ -725,7 +736,7 @@
         clear();
         drawBubbles();
     };
-    
+
     document.addEventListener('keypress', function(event) {
         if (event.which == 27) {
             event.preventDefault();
