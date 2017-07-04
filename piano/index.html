@@ -322,10 +322,13 @@
         return false;
     };
 
+    var lastVirtualMouseDown = 0;
+
     var mouseMove = function(event) {
         event.preventDefault();
-        if (dragging) {
-
+        if (erasing && Date.now() - lastVirtualMouseDown > 250) {
+            mouseDown(event);
+            lastVirtualMouseDown = Date.now();
         }
         return false;
     };
