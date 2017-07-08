@@ -69,21 +69,29 @@
 
   <style type="text/css">
 
+        #forget, #eraser {
+            border-radius: 200px;
+            background-size: 50px 50px;
+            height: 50px;
+            width: 50px;
+            display: inline-block;
+            position: absolute;
+            z-index: 1000;
+            margin: 0;
+            transition: 0.5s linear;
+        }
+
       #forget {
-          background: url(https://cdn4.iconfinder.com/data/icons/meBaze-Freebies/512/reload.png);
-          background-size: 50px 50px;
-          height: 50px;
-          width: 50px;
-          display: inline-block;
-          position: absolute;
-          z-index: 1000;
-          margin: 0;
-          transition: 1s linear;
+          background-image: url(https://cdn4.iconfinder.com/data/icons/meBaze-Freebies/512/reload.png);
       }
 
-      #forget:hover {
-          filter: drop-shadow(0 0 10px #43C6F0);
-          transform: rotate(30deg);
+      #eraser {
+          background: url(https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png) center/30px 30px, linear-gradient(to bottom, rgba(240, 199, 66, 0.5), rgba(215, 145, 0, 0.5)) center/50px 50px;
+          background-repeat: no-repeat;
+      }
+
+      #eraser.active {
+          filter: drop-shadow(0 0 10px #f0c742);
           transition: 0.5s linear;
       }
 
@@ -118,22 +126,6 @@
           color: #777;
       }
 
-      #eraser.active {
-          background: rgba(175, 200, 150, .5);
-      }
-
-      #eraser {
-          border-radius: 64px;
-          padding: 4px 7px;
-          margin: 0 10px;
-          background: rgba(175, 200, 150, .2);
-      }
-
-      #eraser img {
-          padding: 0;
-          margin: 0;
-      }
-
       canvas.erasing {
           cursor: crosshair;
       }
@@ -148,21 +140,44 @@
       <canvas id="canvas" height="300" width="800"></canvas>
   </main>
 
+  <a id="eraser" href="#"></a>
   <a href="#" id="forget"></a>
   <nav>
       Veiksmas:
       <select id="action">
           <option value="">Jokio</option>
           <option value="🎲">Mesti kauliuką</option>
-          <optgroup label="Natos">
-              <option value="Do₁">Do₁</option>
-              <option value="Re">Re</option>
-              <option value="Mi">Mi</option>
-              <option value="Fa">Fa</option>
-              <option value="Sol">Sol</option>
-              <option value="La">La</option>
-              <option value="Si">Si</option>
-              <option value="Do₂">Do₂</option>
+          <optgroup label="Mažoji oktava, balti klavišai">
+              <option value="Do₁">Do</option>
+              <option value="Re₁">Re</option>
+              <option value="Mi₁">Mi</option>
+              <option value="Fa₁">Fa</option>
+              <option value="Sol₁">Sol</option>
+              <option value="La₁">La</option>
+              <option value="Si₁">Si</option>
+          </optgroup>
+          <optgroup label="Pirmoji oktava, balti klavišai">
+              <option value="Do₂">Do</option>
+              <option value="Re₂">Re</option>
+              <option value="Mi₂">Mi</option>
+              <option value="Fa₂">Fa</option>
+              <option value="Sol₂">Sol</option>
+              <option value="La₂">La</option>
+              <option value="Si₂">Si</option>
+          </optgroup>
+          <optgroup label="Mažoji oktava, juodi klavišai">
+              <option value="Do♯₁">Do♯, Re♭</option>
+              <option value="Re♯₁">Re♯, Mi♭</option>
+              <option value="Fa♯₁">Fa♯, Sol♭</option>
+              <option value="Sol♯₁">Sol♯, La♭</option>
+              <option value="La♯₁">La♯, Si♭</option>
+          </optgroup>
+          <optgroup label="Pirmoji oktava, juodi klavišai">
+              <option value="Do♯₂">Do♯, Re♭</option>
+              <option value="Re♯₂">Re♯, Mi♭</option>
+              <option value="Fa♯₂">Fa♯, Sol♭</option>
+              <option value="Sol♯₂">Sol♯, La♭</option>
+              <option value="La♯₂">La♯, Si♭</option>
           </optgroup>
       </select>
       Rodyklė:
@@ -176,7 +191,6 @@
           <option value="5">Atvirtus 6 akimis</option>
           <option value="Else">Netinkant jokiai kitai rodyklei</option>
       </select>
-      <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16"></a>
       Lėtinimas, ms:
       <input type="number" id="speed" value="1000" style="width: 4em;">
       Kauliukas:
@@ -219,13 +233,29 @@
 
     var keys = {
         'Do₁': '1C',
-        'Re':  '1D',
-        'Mi':  '1E',
-        'Fa':  '1F',
-        'Sol': '1G',
-        'La':  '2A',
-        'Si':  '2B',
+        'Re₁':  '1D',
+        'Mi₁':  '1E',
+        'Fa₁':  '1F',
+        'Sol₁': '1G',
+        'La₁':  '2A',
+        'Si₁':  '2B',
         'Do₂': '2C',
+        'Re₂':  '2D',
+        'Mi₂':  '2E',
+        'Fa₂':  '2F',
+        'Sol₂': '2G',
+        'La₂':  '2A',
+        'Si₂':  '2B',
+        'Do♯₁': '1Cs',
+        'Re♯₁':  '1Ds',
+        'Fa♯₁':  '1Fs',
+        'Sol♯₁': '1Gs',
+        'La♯₁':  '2As',
+        'Do♯₂': '2Cs',
+        'Re♯₂':  '2Ds',
+        'Fa♯₂':  '2Fs',
+        'Sol♯₂': '2Gs',
+        'La♯₂':  '2As',
     };
 
     var commands = function(all) {
@@ -286,7 +316,7 @@
         if (condition == '0' || parseInt(condition) > 0) {
             ctx.fillStyle = '#CCC';
             ctx.fillRect(x - 10, y - 10, 20, 20);
-            ctx.font = '20px sans-serif';
+            ctx.font = "20px 'Segoe UI', sans-serif";
             ctx.fillStyle = '#333';
             ctx.fillText(diceFaces[parseInt(condition)], x, y + 7);
         }
@@ -322,13 +352,14 @@
         return false;
     };
 
-    var lastVirtualMouseDown = 0;
+    var virtualMouseDownLock = false;
 
     var mouseMove = function(event) {
         event.preventDefault();
-        if (dragging && erasing && Date.now() - lastVirtualMouseDown > 250) {
+        if (dragging && erasing && !virtualMouseDownLock) {
+            virtualMouseDownLock = true;
             mouseDown(event);
-            lastVirtualMouseDown = Date.now();
+            virtualMouseDownLock = false;
         }
         return false;
     };
@@ -350,7 +381,7 @@
             //ctx.rect(bubbles[j].x - 25, bubbles[j].y - 25, 50, 50);
             ctx.fillStyle = bubbles[j].color.replace('?', selection == j ? '0.9' : '0.3');
             ctx.fill();
-            ctx.font = '22px sans-serif';
+            ctx.font = "20px 'Segoe UI', sans-serif";
             ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
             ctx.textAlign = 'center';
             ctx.fillText(bubbles[j].label, bubbles[j].x, bubbles[j].y + 7);
@@ -548,8 +579,6 @@
         do {
             count++;
             if (count > 1000) {
-                console.log(bubbles, lines);
-                console.log('FROWNY FACE');
                 break;
             }
             holeFound = false;
@@ -714,6 +743,7 @@
         $('#canvas')[0].width = Math.max(950, $(window).width() - 20);
         $('#canvas')[0].height = Math.max(300, $(window).height() - 160);
         $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 140});
+        $('#eraser').css({left: $(window).width() - 70, top: $(window).height() - 200});
         $('.key').width(($(window).width() - 200) / 14);
         try {
             drawBubbles();
