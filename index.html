@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,13 +16,20 @@
             margin: 0;
         }
 
+        body {
+background-image: url(bg.png);
+background-size: cover;
+            height: calc(100vh - 20px);
+        }
+
         canvas {
             display: inline-block;
-            border: 1px solid #999;
-            border-radius: 5px;
+            border-radius: 10px;
             position: absolute;
             left: 0px;
             top: 55px;
+            background: rgba(50, 40, 10, .30);
+            box-shadow: 0 0 30px rgba(200, 200, 200, .65);
         }
 
         canvas.error {
@@ -33,13 +41,16 @@
         }
 
         #eraser.active {
-            background: rgba(175, 200, 150, .5);
+            background: rgba(240, 85, 75, .5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 1);
         }
 
         #eraser {
             border-radius: 64px;
             padding: 4px 7px;
-            background: rgba(175, 200, 150, .2);
+            background: rgba(240, 85, 75, .2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 1);
+
         }
 
         #eraser img {
@@ -80,6 +91,25 @@
 
         #turtle-canvas {
             z-index: 1000;
+            top: 65px;
+            left: 10px;
+            box-shadow: -10px -10px 80px white;
+        }
+
+        #messages {
+            position: fixed;
+            bottom: 30px;
+            background: rgba(255, 255, 255, .75);
+            width: calc(100vw - 200px);
+            left: 100px;
+            z-index: 10000;
+            border-radius: 5px;
+
+        }
+
+        #messages > * {
+            text-align: center;
+
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
@@ -87,6 +117,8 @@
 			crossorigin="anonymous"></script>
 </head>
 <body>
+    <div id="messages">
+    </div>
     <a href="#" id="forget"></a>
     <nav>
         Veiksmas:
@@ -95,35 +127,26 @@
             <option value="➠">Pirmyn</option>
             <option value="↷">Suktis pagal laikrodžio rodyklę</option>
             <option value="↶">Suktis prieš laikrodžio rodyklę</option>
-            <option value="🎲">Mesti kauliuką</option>
-            <option value="🚩">Pažymėti</option>
-            <option value="😋">Suvalgyti</option>
         </select>
         Rodyklė:
         <select id="conditioning" style="width: 150px;">
             <option value="">Besąlygiška</option>
             <option value="Obstacle">Tik priešais kliūtį</option>
             <option value="Path">Tik priešais kelią</option>
-            <option value="Food">Tik ant maisto</option>
-            <option value="Flag">Tik ant žymės</option>
-            <option value="0">Tik jei iškritusi 1 akis</option>
-            <option value="1">Tik jei iškritę 2 akys</option>
-            <option value="2">Tik jei iškritę 3 akys</option>
-            <option value="3">Tik jei iškritę 4 akys</option>
-            <option value="4">Tik jei iškritę 5 akys</option>
-            <option value="5">Tik jei iškritę 6 akys</option>
-            <option value="Else">Jei jokia kita rodyklė netinka</option>
         </select>
         <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16"></a>
         Lėtinimas, ms:
-        <input type="number" id="speed" value="1000" style="width: 4em;">
-        Kauliukas:
-        <span id="dice">⚀</span>
+        <input type="number" id="speed" value="300" style="width: 4em;">
+
     </nav>
     <main>
         <canvas id="turtle-canvas" height="200" width="200"></canvas>
         <canvas id="canvas" height="350" width="1000"></canvas>
     </main>
+    <img style="display: none;" id="dirt" src="dirt.png">
+    <img style="display: none;" id="grass" src="grass.png">
+    <img style="display: none;" id="water" src="water.png">
+
     <script type="text/javascript">
         var canvas = document.getElementById('canvas');
         var turtleCanvas = document.getElementById('turtle-canvas');
@@ -136,7 +159,8 @@
         var label = '';
         var origin = null;
         var time;
-        var turtle = {x: 4, y: 2, direction: 2};
+        var clicks = 0;
+        var turtle = {x: 1, y: 1, direction: 0};
         var directions = [
             {x: 1, y: 0},
             {x: 0, y: 1},
@@ -145,32 +169,16 @@
         ];
         var arrows = ['▼', '▶', '▲', '◀'];
         var env = [
-            '##########',
-            '#...#...F#',
-            '#...#....#',
-            '#...#....#',
-            '#...#....#',
-            '#...###..#',
-            '#.....#..#',
-            '#.#####..#',
-            '#........#',
-            '##########'
-        ];
+            '#########',
+            '#.B.#W#.#',
+            '#BB..W..#',
+            '#....W.F#',
+            '#....W..#',
+            '#...#W#.#',
+            '#########'        ];
         var eaten = false;
-        var flagged = [
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false]
-        ];
-        var grid = [];
-        var speed = 1000;
+        var grid = null;
+        var speed = 300;
 
         var admits = function(condition) {
             var x = turtle.x;
@@ -181,14 +189,17 @@
                 (condition == '') ||
                 (condition == 'Path' && grid[xx][yy] != '#') ||
                 (condition == 'Food' && env[x][y] == 'F' && !eaten) ||
-                (condition == 'Obstacle' && grid[xx][yy] == '#') ||
-                (condition == 'Flag' && flagged[x][y]) ||
-                (condition == dice);
+                (condition == 'Obstacle' && grid[xx][yy] == '#')
             return result;
         };
 
-        var dice = 0;
-        var diceFaces = '⚀⚁⚂⚃⚄⚅';
+        var message = function(text) {
+            var msg = $('<p></p>').text(text);
+            $('#messages').prepend(msg);
+            window.setTimeout(function() {
+                msg.fadeOut();
+            }, 7500);
+        };
 
         var erasing = false;
 
@@ -211,20 +222,32 @@
 			eraser.setAttribute('class', '');
 		};
 
-        var rollDice = function() {
-            dice = parseInt(Math.random() * 6);
-            document.getElementById('dice').innerHTML = diceFaces[dice];
-        };
 
         var commands = function(all) {
             if (all.length == 0) {
                 return;
             }
+            var justAte = false;
             for (k in all) {
                 var c = all[k];
                 if (c == '➠') {
                     turtle.x += directions[turtle.direction].x;
                     turtle.y += directions[turtle.direction].y;
+                    // If box
+                    if (grid[turtle.x][turtle.y] == 'B' && env[turtle.x][turtle.y] != 'W') {
+                        // If movable box
+                        if (['.', 'W'].includes(grid[turtle.x + directions[turtle.direction].x][turtle.y + directions[turtle.direction].y])) {
+                            // Move box
+                            grid[turtle.x + directions[turtle.direction].x][turtle.y + directions[turtle.direction].y] = 'B';
+                            grid[turtle.x][turtle.y] = '.';
+                        } else {
+                            turtle.x -= directions[turtle.direction].x;
+                            turtle.y -= directions[turtle.direction].y;
+                            endPulsation();
+                            clear();
+                            drawBubbles();
+                        }
+                    }
                 }
                 if (c == '↷') {
                     turtle.direction = (turtle.direction + 3) % 4;
@@ -232,30 +255,40 @@
                 if (c == '↶') {
                     turtle.direction = (turtle.direction + 1) % 4;
                 }
-                if (c == '🎲') {
-                    rollDice();
-                }
-                if (c == '🚩') {
-                    flagged[turtle.x][turtle.y] = true;
-                }
-                if (c == '😋') {
-                    if (env[turtle.x][turtle.y] != 'F' || eaten) {
-                        window.alert('Čia ne maistas!');
-                    } else {
-                        eaten = true;
-                        window.alert('Om nom nom. Puikiai padirbėjote!');
-                    }
+                if (env[turtle.x][turtle.y] == 'F' && !eaten) {
+                    eaten = true;
+                    justAte = true;
                 }
             }
             drawTurtle();
+            if (justAte) {
+                window.setTimeout(function() {
+                    grid = env.map(e => Array.from(e));
+                    turtle = {x: 1, y: 1, direction: 0};
+                    eaten = false;
+                    justAte = false;
+                    endPulsation();
+                    clear();
+                    drawBubbles();
+                    drawTurtle();
+                    if (clicks > 1) {
+                        message('Om nom nom! Dabar pamėginkite automatizuoti visą kelią iki maisto: turi reikėti paspausti tik vieną mygtuką.');
+                    } else {
+                        message('Puikiai padirbėta!');
+                    }
+                    clicks = 0;
+                }, 100);
+            }
         };
 
         var drawTurtle = function() {
-            grid = [];
-            for (k in env) {
-                grid.push([]);
-                for (j in env[k]) {
-                    grid[k].push(env[k][j]);
+            if (grid === null) {
+                grid = [];
+                for (k in env) {
+                    grid.push([]);
+                    for (j in env[k]) {
+                        grid[k].push(env[k][j]);
+                    }
                 }
             }
             if (env[turtle.x][turtle.y] == '#') {
@@ -265,47 +298,69 @@
                 endPulsation();
                 clear();
                 drawBubbles();
-                window.alert('Atsitrenkėte į sieną!');
+                console.log('Atsitrenkėte į sieną');
             }
-            grid[turtle.x][turtle.y] = 'T';
+            if (env[turtle.x][turtle.y] == 'W' && grid[turtle.x][turtle.y] != 'B') {
+                window.clearInterval(execution);
+                turtle = {x: 1, y: 1, direction: 0};
+                grid = env.map(e => Array.from(e));
+                endPulsation();
+                clear();
+                drawBubbles();
+                console.log('Įkritote į vandenį');
+            }
             drawGrid();
         };
 
         var drawGrid = function() {
+            turtleCanvas.height = 24 * env.length;
+            turtleCanvas.width = 24 * env[0].length;
             var tctx = turtleCanvas.getContext('2d');
-            tctx.clearRect(0, 0, 200, 200);
+            var dirt = tctx.createPattern(document.getElementById('dirt'), 'repeat');
+            var grass = tctx.createPattern(document.getElementById('grass'), 'repeat');
+            var water = tctx.createPattern(document.getElementById('water'), 'repeat');
+            tctx.clearRect(0, 0, 24 * env[0].length, 24 * env.length);
             var x = 0, y = 0;
             for (k in grid) {
                 x = 0;
                 for (j in grid[k]) {
                     switch (grid[k][j]) {
                         case '#':
-                            tctx.fillStyle = '#740';
+                            tctx.fillStyle = dirt;
                             break;
                         case '.':
-                            tctx.fillStyle = '#380';
-                            break;
                         case 'T':
-                            tctx.fillStyle = (env[k][j] == 'F' && !eaten) ? '#CC0' : '#380';
-                            break;
                         case 'F':
-                            tctx.fillStyle = !eaten ? '#CC0' : '#380';
+                        case 'B':
+                            tctx.fillStyle = grass;
                             break;
+                        case 'W':
+                            tctx.fillStyle = water;
                     }
-                    tctx.fillRect(x, y, 20, 20);
-                    if (flagged[k][j]) {
+                    if (env[k][j] == 'W') {
+                        tctx.fillStyle = water;
+                    }
+                    tctx.fillRect(x, y, 24, 24);
+                    if (env[k][j] == 'F' && !eaten) {
                         tctx.fillStyle = 'white';
                         tctx.font = '15px sans-serif';
-                        tctx.fillText('🚩', x, y + 17);
+                        tctx.fillText('🍍', x, y + 17);
                     }
-                    if (grid[k][j] == 'T') {
+                    if (grid[k][j] == 'B') {
                         tctx.fillStyle = 'white';
-                        tctx.font = '20px sans-serif';
-                        tctx.fillText(arrows[turtle.direction], x, y + 17);
+                        tctx.font = '15px sans-serif';
+                        tctx.fillText('📦', x, y + 17);
                     }
-                    x += 20;
+                    if (turtle.x == k && turtle.y == j) {
+                        tctx.fillStyle = 'rgba(255, 255, 200, .75)';
+                        tctx.strokeStyle = 'black';
+                        tctx.font = '24px sans-serif';
+                        tctx.fillText(arrows[turtle.direction], x, y + 20);
+                        tctx.strokeText(arrows[turtle.direction], x, y + 20);
+                    }
+                    x += 24;
                 }
-                y += 20;
+                y += 24;
             }
         };
 
@@ -318,7 +373,7 @@
             var dl = Math.sqrt(Math.pow(d.x, 2) + Math.pow(d.y, 2));
             d.x /= dl;
             d.y /= dl;
-            ctx.strokeStyle = '#999';
+            ctx.strokeStyle = '#FFC';
             ctx.moveTo(bubbles[source].x + d.x * bubbles[source].radius, bubbles[source].y + d.y * bubbles[source].radius);
             ctx.lineTo(bubbles[target].x - d.x * (bubbles[target].radius + 15), bubbles[target].y - d.y * (bubbles[target].radius + 15));
             ctx.stroke();
@@ -331,24 +386,20 @@
             ctx.lineTo(-5, 15);
             ctx.closePath();
             ctx.restore();
-            ctx.fillStyle = '#999';
+            ctx.fillStyle = '#FFC';
             ctx.fill();
             var x = parseInt((bubbles[source].x + bubbles[target].x) / 2);
             var y = parseInt((bubbles[source].y + bubbles[target].y) / 2);
-            if (condition == 'Obstacle' || condition == 'Path' || condition == 'Food') {
-                ctx.fillStyle = {'Obstacle': '#740', 'Path': '#380', 'Food': '#CC0'}[condition];
+            if (condition == 'Obstacle' || condition == 'Path') {
+                var dirt = ctx.createPattern(document.getElementById('dirt'), 'repeat');
+                var grass = ctx.createPattern(document.getElementById('grass'), 'repeat');
+                ctx.fillStyle = {'Obstacle': dirt, 'Path': grass}[condition];
                 ctx.fillRect(x - 10, y - 10, 20, 20);
             }
-            if (condition == '0' || parseInt(condition) > 0) {
-                ctx.fillStyle = '#CCC';
-                ctx.fillRect(x - 10, y - 10, 20, 20);
-                ctx.font = '20px sans-serif';
-                ctx.fillStyle = '#333';
-                ctx.fillText(diceFaces[parseInt(condition)], x, y + 7);
-            }
-            if (condition == 'Flag') {
+
+            if (condition == 'Food') {
                 ctx.font = '15px sans-serif';
-                ctx.fillText('🚩', x, y + 5);
+                ctx.fillText('🍍', x, y + 5);
             }
             if (condition == 'Else') {
                 ctx.font = '40px bold sans-serif';
@@ -404,7 +455,7 @@
                 ctx.beginPath();
                 ctx.ellipse(bubbles[j].x, bubbles[j].y, bubbles[j].radius, bubbles[j].radius, 0, 0, 2 * Math.PI);
                 //ctx.rect(bubbles[j].x - 25, bubbles[j].y - 25, 50, 50);
-                ctx.fillStyle = bubbles[j].color.replace('?', selection == j ? '0.9' : '0.3');
+                ctx.fillStyle = bubbles[j].color.replace('?', selection == j ? '0.7' : '0.45');
                 ctx.fill();
                 ctx.font = '22px sans-serif';
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
@@ -484,7 +535,7 @@
             } else {
 				if (selection === null || bubbles[selection].color == 'transparent') {
 					if (!shouldInhibitSpawning(x, y) || (selection !== null && bubbles[selection].color == 'transparent')) {
-						var color = 'rgba(150, 175, 200, ?)';
+						var color = 'rgba(255, 255, 255, ?)';
 						var newBubble = {x: event.pageX - canvas.offsetLeft, y: event.pageY - canvas.offsetTop, radius: 25, color: color, label: label};
 						if (selection === null) {
 							bubbles.push(newBubble);
@@ -658,11 +709,11 @@
                 }
                 if (currentStates.length > 1) {
                     //canvas.setAttribute('class', 'error');
-                    clear();
-                    drawBubbles();
-                    window.clearInterval(execution);
-                    window.alert('Šiame užsiėmime nėra paralelizmo, todėl paspaudimas negali persiduoti keliems mygtukams iš karto.');
-                    return;
+                    //clear();
+                    //drawBubbles();
+                    //window.clearInterval(execution);
+                    currentStates = [currentStates[parseInt(Math.random() * currentStates.length)]];
+                    //return;
                 }
                 if (currentStates.length == 0) {
                     clear();
@@ -693,6 +744,7 @@
                 event.pageX = event.changedTouches[0].pageX;
                 event.pageY = event.changedTouches[0].pageY;
             }
+            clicks++;
             execute(locate(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
             return false;
         });
@@ -705,7 +757,7 @@
 
         var speedSwitch = document.getElementById('speed');
 
-        speedSwitch.addEventListener('blur', function() {
+        speedSwitch.addEventListener('change', function() {
             speed = parseInt(speedSwitch.value);
         });
 
@@ -728,56 +780,59 @@
 
         var store = function() {
             console.log('Begin storing');
-            window.localStorage.setItem('maze:timestamp', JSON.stringify(Date.now()));
-            window.localStorage.setItem('maze:bubbles', JSON.stringify(bubbles));
-            window.localStorage.setItem('maze:lines', JSON.stringify(lines));
-            window.localStorage.setItem('maze:turtle', JSON.stringify(turtle));
-            window.localStorage.setItem('maze:eaten', JSON.stringify(eaten));
-            window.localStorage.setItem('maze:flagged', JSON.stringify(flagged));
-            window.localStorage.setItem('maze:speed', JSON.stringify(speed));
+            window.localStorage.setItem('maze:0:timestamp', JSON.stringify(Date.now()));
+            window.localStorage.setItem('maze:0:bubbles', JSON.stringify(bubbles));
+            window.localStorage.setItem('maze:0:lines', JSON.stringify(lines));
+            window.localStorage.setItem('maze:0:speed', JSON.stringify(speed));
             console.log('End storing');
         };
 
         var fetch = function() {
-            if (window.localStorage.getItem('maze:timestamp')) {
-                bubbles = JSON.parse(window.localStorage.getItem('maze:bubbles'));
-                lines = JSON.parse(window.localStorage.getItem('maze:lines'));
-                turtle = JSON.parse(window.localStorage.getItem('maze:turtle'));
-                eaten = JSON.parse(window.localStorage.getItem('maze:eaten'));
-                flagged = JSON.parse(window.localStorage.getItem('maze:flagged'));
-                speed = JSON.parse(window.localStorage.getItem('maze:speed'));
+            if (window.localStorage.getItem('maze:0:timestamp')) {
+                bubbles = JSON.parse(window.localStorage.getItem('maze:0:bubbles'));
+                lines = JSON.parse(window.localStorage.getItem('maze:0:lines'));
+                speed = JSON.parse(window.localStorage.getItem('maze:0:speed'));
                 speedSwitch.value = speed;
             }
         };
 
         var forget = function() {
-            window.localStorage.removeItem('maze:timestamp');
+            window.localStorage.removeItem('maze:0:timestamp');
             window.removeEventListener('beforeunload', store);
             window.location.reload();
         };
 
-        window.fetch();
-        window.setInterval(store, 15000);
-        window.addEventListener('beforeunload', store);
+        $(function() {
+            window.fetch();
+            window.setInterval(store, 15000);
+            window.addEventListener('beforeunload', store);
 
-        $(window).resize(function() {
-            $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
-            $('#canvas')[0].height = Math.max(350, $(window).height() - 85);
-            $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 80});
-            try {
-                drawBubbles();
-                drawTurtle();
-            } catch (e) {
-                window.alert('Nepavyko atkurti aplinkos.');
-                forget();
-            }
-        }).trigger('resize');
+            var init = function() {
+                $('#canvas')[0].width = Math.max(1000, $(window).width() - 20);
+                $('#canvas')[0].height = Math.max(350, $(window).height() - 85);
+                $('#forget').css({left: $(window).width() - 70, top: $(window).height() - 80});
+                try {
+                    drawBubbles();
+                    drawTurtle();
+                } catch (e) {
+                    console.log(e);
+                    window.alert('Nepavyko atkurti aplinkos.');
+                    forget();
+                }
+            };
 
-        $('#forget').click(function(event) {
-            event.preventDefault();
-            if (window.confirm('Ar norite atkurti aplinką į tokią, kokia ji buvo iš pradžių?')) {
-                forget();
-            }
+            $(window).resize(init);
+
+            $('#dirt, #grass, #water').on('load', init);
+
+            $('#forget').click(function(event) {
+                event.preventDefault();
+                if (window.confirm('Ar norite atkurti aplinką į tokią, kokia ji buvo iš pradžių?')) {
+                    forget();
+                }
+            });
+
+            init();
         });
 
     </script>
