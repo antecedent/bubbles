@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Labirintas</title>
+    <title>Maze</title>
     <style type="text/css">
         * {
             margin: 10px;
@@ -112,6 +112,50 @@ background-repeat: no-repeat;
             text-align: center;
 
         }
+
+        aside {
+            position: fixed;
+            right: 0;
+            top: calc(50vh - 100px);
+            width: 30px;
+            z-index: 100000;
+        }
+
+        aside .label {
+            transform: rotate(270deg);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: absolute;
+            right: 0px;
+            top: 70px;
+            color: rgba(255, 255, 255, .75);
+            text-shadow: 0 0 15px black;
+
+        }
+
+        aside a {
+            background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(0, 0, 0, .5));
+            display: inline-block;
+            width: 30px;
+            text-decoration: none;
+            color: #333;
+            margin-left: 20px;
+            padding: 7px;
+            border-radius: 5px;
+            margin-bottom: 0;
+            transition: width 0.5s ease-in-out, margin-left 0.5s ease-in-out;
+        }
+
+        aside a:hover, aside a.current {
+            width: 40px;
+            margin-left: 10px;
+        }
+
+        aside a.done {
+            color: green;
+            text-shadow: 0 0 6px lightgreen;
+            background: linear-gradient(to right, rgba(220, 255, 175, 1), rgba(0, 0, 0, .5));
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
 			integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -122,21 +166,21 @@ background-repeat: no-repeat;
     </div>
     <a href="#" id="forget"></a>
     <nav>
-        Veiksmas:
+        Action:
         <select id="action" style="width: 150px;">
-            <option value="">Jokio</option>
-            <option value="➠">Pirmyn</option>
-            <option value="↷">Suktis pagal laikrodžio rodyklę</option>
-            <option value="↶">Suktis prieš laikrodžio rodyklę</option>
+            <option value="">None</option>
+            <option value="➠">Forward</option>
+            <option value="↷">Turn clockwise</option>
+            <option value="↶">Turn counter-clockwise</option>
         </select>
-        Rodyklė:
+        Transition:
         <select id="conditioning" style="width: 150px;">
-            <option value="">Besąlygiška</option>
-            <option value="Obstacle">Tik priešais kliūtį</option>
-            <option value="Path">Tik priešais kelią</option>
+            <option value="">Regular</option>
+            <option value="Obstacle">Only when wall ahead</option>
+            <option value="Path">Only when grass ahead</option>
         </select>
         <a id="eraser" href="#"><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/3715-200.png" alt="Trintukas" title="Trintukas" width="16" height="16"></a>
-        Lėtinimas, ms:
+        Delay, ms:
         <input type="number" id="speed" value="300" style="width: 4em;">
 
     </nav>
@@ -148,7 +192,16 @@ background-repeat: no-repeat;
     <img style="display: none;" id="grass" src="grass.png">
     <img style="display: none;" id="water" src="water.png">
 
+    <aside>
+        <p class="label">Levels</p>
+        <a href="#" data-level="1">1</a>
+        <a href="#" data-level="2">2</a>
+        <a href="#" data-level="3">3</a>
+        <a href="#" data-level="4">4</a>
+    </aside>
+
     <script type="text/javascript">
+        var level = 1;
         var canvas = document.getElementById('canvas');
         var turtleCanvas = document.getElementById('turtle-canvas');
         var ctx = canvas.getContext('2d');
@@ -161,7 +214,7 @@ background-repeat: no-repeat;
         var origin = null;
         var time;
         var clicks = 0;
-        var turtle = {x: 1, y: 1, direction: 0};
+        var turtle = {x: 1, y: 1, direction: 1};
         var directions = [
             {x: 1, y: 0},
             {x: 0, y: 1},
@@ -169,14 +222,44 @@ background-repeat: no-repeat;
             {x: 0, y: -1}
         ];
         var arrows = ['▼', '▶', '▲', '◀'];
-        var env = [
-            '#########',
-            '#.B.#W#.#',
-            '#BB..W..#',
-            '#....W.F#',
-            '#....W..#',
-            '#...#W#.#',
-            '#########'        ];
+        var levels = [
+            null,
+            [
+                '####################',
+                '#.................F#',
+                '####################'
+            ],
+            [
+                '#########',
+                '#.B.#W#.#',
+                '#BB..W..#',
+                '#....W.F#',
+                '#....W..#',
+                '#...#W#.#',
+                '#########'
+            ],
+            [
+                '###############',
+                '#.#...#...#...#',
+                '#.#.#.#.#.#.#.#',
+                '#...#...#...#F#',
+                '###############'
+            ],
+            [
+                '###########',
+                '#.B..W....#',
+                '#....W....#',
+                '#....W...B#',
+                '#....W....#',
+                '#####WWWWW#',
+                '#....W....#',
+                '#....W....#',
+                '#....W....#',
+                '#F...W.B..#',
+                '###########'
+            ]
+        ];
+        var env = levels[1];
         var eaten = false;
         var grid = null;
         var speed = 300;
@@ -244,6 +327,7 @@ background-repeat: no-repeat;
                         } else {
                             turtle.x -= directions[turtle.direction].x;
                             turtle.y -= directions[turtle.direction].y;
+                            window.clearInterval(execution);
                             endPulsation();
                             clear();
                             drawBubbles();
@@ -265,18 +349,21 @@ background-repeat: no-repeat;
             if (justAte) {
                 window.setTimeout(function() {
                     grid = env.map(e => Array.from(e));
-                    turtle = {x: 1, y: 1, direction: 0};
+                    turtle = {x: 1, y: 1, direction: 1};
                     eaten = false;
                     justAte = false;
+                    window.clearInterval(execution);
+
+                    if (clicks > 1) {
+                        message('Yummy! Now try making the entire walk fully automated: one (double-)click should be enough.');
+                    } else {
+                        message('Awesome!');
+                        $('a[data-level=?]'.replace('?', level + 1)).trigger('click');
+                    }
                     endPulsation();
                     clear();
                     drawBubbles();
                     drawTurtle();
-                    if (clicks > 1) {
-                        message('Om nom nom! Dabar pamėginkite automatizuoti visą kelią iki maisto: turi reikėti paspausti tik vieną mygtuką.');
-                    } else {
-                        message('Puikiai padirbėta!');
-                    }
                     clicks = 0;
                 }, 100);
             }
@@ -303,8 +390,9 @@ background-repeat: no-repeat;
             }
             if (env[turtle.x][turtle.y] == 'W' && grid[turtle.x][turtle.y] != 'B') {
                 window.clearInterval(execution);
-                turtle = {x: 1, y: 1, direction: 0};
+                turtle = {x: 1, y: 1, direction: 1};
                 grid = env.map(e => Array.from(e));
+                window.clearInterval(execution);
                 endPulsation();
                 clear();
                 drawBubbles();
@@ -622,7 +710,7 @@ background-repeat: no-repeat;
                     var target = bubbles[lines[k][1]];
                     if (source.color == 'transparent' || target.color == 'transparent') {
                         if (warn) {
-                            window.alert('Yra rodyklių, nevedančių niekur!');
+                            window.alert('Some transitions are stranded!');
                         }
                         return false;
                     }
@@ -781,29 +869,31 @@ background-repeat: no-repeat;
 
         var store = function() {
             console.log('Begin storing');
-            window.localStorage.setItem('maze:0:timestamp', JSON.stringify(Date.now()));
-            window.localStorage.setItem('maze:0:bubbles', JSON.stringify(bubbles));
-            window.localStorage.setItem('maze:0:lines', JSON.stringify(lines));
-            window.localStorage.setItem('maze:0:speed', JSON.stringify(speed));
+            window.localStorage.setItem('maze:' + level  + ':timestamp', JSON.stringify(Date.now()));
+            window.localStorage.setItem('maze:' + level  + ':bubbles', JSON.stringify(bubbles));
+            window.localStorage.setItem('maze:' + level  + ':lines', JSON.stringify(lines));
+            window.localStorage.setItem('maze:' + level  + ':speed', JSON.stringify(speed));
             console.log('End storing');
         };
 
         var fetch = function() {
-            if (window.localStorage.getItem('maze:0:timestamp')) {
-                bubbles = JSON.parse(window.localStorage.getItem('maze:0:bubbles'));
-                lines = JSON.parse(window.localStorage.getItem('maze:0:lines'));
-                speed = JSON.parse(window.localStorage.getItem('maze:0:speed'));
+            if (window.localStorage.getItem('maze:' + level  + ':timestamp')) {
+                bubbles = JSON.parse(window.localStorage.getItem('maze:' + level  + ':bubbles'));
+                lines = JSON.parse(window.localStorage.getItem('maze:' + level  + ':lines'));
+                speed = JSON.parse(window.localStorage.getItem('maze:' + level  + ':speed'));
                 speedSwitch.value = speed;
             }
         };
 
         var forget = function() {
-            window.localStorage.removeItem('maze:0:timestamp');
+            window.localStorage.removeItem('maze:' + level  + ':timestamp');
             window.removeEventListener('beforeunload', store);
             window.location.reload();
         };
 
         $(function() {
+            level = window.localStorage.getItem('maze:level') || 1;
+            $('a[data-level=?]'.replace('?', level)).addClass('current');
             window.fetch();
             window.setInterval(store, 15000);
             window.addEventListener('beforeunload', store);
@@ -817,7 +907,7 @@ background-repeat: no-repeat;
                     drawTurtle();
                 } catch (e) {
                     console.log(e);
-                    window.alert('Nepavyko atkurti aplinkos.');
+                    window.alert('Failed to restore the environment.');
                     forget();
                 }
             };
@@ -828,12 +918,28 @@ background-repeat: no-repeat;
 
             $('#forget').click(function(event) {
                 event.preventDefault();
-                if (window.confirm('Ar norite atkurti aplinką į tokią, kokia ji buvo iš pradžių?')) {
+                if (window.confirm('Would you like to restore this level\'s environment to its initial state?')) {
                     forget();
                 }
             });
 
             init();
+
+            $('a[data-level]').click(function(event) {
+                event.preventDefault();
+                store();
+                level = parseInt($(this).data('level'));
+                env = levels[level];
+                grid = env.map(e => Array.from(e));
+                fetch();
+                endPulsation();
+                window.clearInterval(execution);
+                clear();
+                drawBubbles();
+                drawTurtle();
+                $('a[data-level]').removeClass('current');
+                $(this).addClass('current');
+            });
         });
 
     </script>
