@@ -928,6 +928,8 @@ background-repeat: no-repeat;
             $('a[data-level]').click(function(event) {
                 event.preventDefault();
                 store();
+                bubbles = [];
+                lines = [];
                 level = parseInt($(this).data('level'));
                 env = levels[level];
                 grid = env.map(e => Array.from(e));
