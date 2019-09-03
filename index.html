@@ -936,11 +936,12 @@ background-repeat: no-repeat;
                 fetch();
                 env = levels[level];
                 grid = env.map(e => Array.from(e));
+                turtle = {x: 0, y: 0, direction: 1}
                 endPulsation();
                 window.clearInterval(execution);
                 clear();
                 drawBubbles();
-                drawGrid();
+                drawTurle();
                 $('a[data-level]').removeClass('current');
                 $(this).addClass('current');
             });
