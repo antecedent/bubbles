@@ -710,9 +710,9 @@ background-repeat: no-repeat;
                     var source = bubbles[lines[k][0]];
                     var target = bubbles[lines[k][1]];
                     if (source.color == 'transparent' || target.color == 'transparent') {
-                        //if (warn) {
-                        window.alert('Some transition arrows lead to nowhere! Please erase them.');
-                        //}
+                        if (warn) {
+                            window.alert('Some transition arrows lead to nowhere! Please erase them.');
+                        }
                         return false;
                     }
                 }
@@ -771,11 +771,11 @@ background-repeat: no-repeat;
             };
 
         var execute = function(id) {
-            window.clearInterval(execution);
             if (!validateConnections()) {
                 return;
             }
             cleanUp();
+            window.clearInterval(execution);
             currentStates = [[id, '']];
             var doExecution = function() {
                 endPulsation();
