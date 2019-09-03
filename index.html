@@ -771,11 +771,11 @@ background-repeat: no-repeat;
             };
 
         var execute = function(id) {
+            window.clearInterval(execution);
             if (!validateConnections()) {
                 return;
             }
             cleanUp();
-            window.clearInterval(execution);
             currentStates = [[id, '']];
             var doExecution = function() {
                 endPulsation();
